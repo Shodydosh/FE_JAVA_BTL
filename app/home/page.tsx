@@ -2,10 +2,19 @@
 import React, {useState} from 'react';
 import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Breadcrumb, Layout, Menu, Button, Input} from 'antd';
+
+import { Breadcrumb, Layout, Menu, Button, Input, Typography } from 'antd';
+
+import HeaderView from '../../components/Core/Header';
+
+import FooterView from '../../components/Core/Footer';
+
 const { Search } = Input;
 
+const { Text } = Typography;
+
 const { Header, Content, Footer, Sider } = Layout;
+
 const SearchProps : any = [];
 
 type MenuItem = Required<MenuProps>['items'][number];
@@ -53,11 +62,10 @@ const App: React.FC = () => {
     const [current, setCurrent] = useState('1');
 
     return (
-        <Layout className='min-h-screen'>
-            <Header className='flex items-center justify-between bg-blue-300'>
-                <div className="text-xl text-white">JAVA_BTL</div>
-                <Button type="primary" className='bg-blue-400'>Login</Button>
-            </Header>
+      //  <div style={appStyles}>
+          
+          <Layout className=' flex min-h-screen overflow-auto'>
+            <HeaderView/>
             <Layout>
                 <Sider width={200}>
                 <Menu
@@ -79,8 +87,17 @@ const App: React.FC = () => {
                 </Content>
                 </Layout>
             </Layout>
-        </Layout>
+            <FooterView/>
+          </Layout>
+        // </div>
     );
 };
+// const appStyles:React.CSSProperties = {
+//   width: '100vw',
+//   height: '100vh',
+//   backgroundImage: 'url("https://scontent.fhan14-2.fna.fbcdn.net/v/t1.6435-9/106565054_3970224156385298_2926454980612667154_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=8bfeb9&_nc_ohc=9xSnaV-q_hsAX8F2OIo&_nc_ht=scontent.fhan14-2.fna&oh=00_AfB05TlNJL3_zTQXQdDMyGAXCgY4mFxGCJE_LHT72HEYdA&oe=654605F0")',
+//   backgroundSize: 'cover',
+//   backgroundRepeat:'no-repeat'
+// };
 
 export default App;
