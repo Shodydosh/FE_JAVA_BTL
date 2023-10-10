@@ -3,6 +3,9 @@ import React, {useState} from 'react';
 import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Breadcrumb, Layout, Menu, Button, Input, Typography } from 'antd';
+
+import Banner from '../components/home/Banner';
+import ProductList from '../components/home/ProductList';
 import HeaderView from '../components/Core/Header';
 import FooterView from '../components/Core/Footer';
 const { Search } = Input;
@@ -13,7 +16,7 @@ type MenuItem = Required<MenuProps>['items'][number];
 
 function getItem(
   label: React.ReactNode,
-  key?: React.Key | null,
+  key?: React.Key | null, 
   icon?: React.ReactNode,
   children?: MenuItem[],
   type?: 'group',
@@ -69,13 +72,9 @@ const App: React.FC = () => {
                 />
                 </Sider>
                 <Layout style={{ padding: '0 24px 24px' }}>
-                <Breadcrumb style={{ margin: '16px 0' }}>
-                    <Breadcrumb.Item>Home</Breadcrumb.Item>
-                    <Breadcrumb.Item>List</Breadcrumb.Item>
-                    <Breadcrumb.Item>App</Breadcrumb.Item>
-                </Breadcrumb>
-                <Content className='bg-red-300'>
-                    Content
+                <Content className='w-full min-h-screen'>
+                  <Banner></Banner>
+                  <ProductList></ProductList>
                 </Content>
                 </Layout>
             </Layout>
@@ -84,12 +83,5 @@ const App: React.FC = () => {
         // </div>
     );
 };
-// const appStyles:React.CSSProperties = {
-//   width: '100vw',
-//   height: '100vh',
-//   backgroundImage: 'url("https://scontent.fhan14-2.fna.fbcdn.net/v/t1.6435-9/106565054_3970224156385298_2926454980612667154_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=8bfeb9&_nc_ohc=9xSnaV-q_hsAX8F2OIo&_nc_ht=scontent.fhan14-2.fna&oh=00_AfB05TlNJL3_zTQXQdDMyGAXCgY4mFxGCJE_LHT72HEYdA&oe=654605F0")',
-//   backgroundSize: 'cover',
-//   backgroundRepeat:'no-repeat'
-// };
 
 export default App;
