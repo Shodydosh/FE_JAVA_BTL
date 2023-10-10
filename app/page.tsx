@@ -2,21 +2,13 @@
 import React, {useState} from 'react';
 import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-
 import { Breadcrumb, Layout, Menu, Button, Input, Typography } from 'antd';
-
-import HeaderView from '../../components/Core/Header';
-
-import FooterView from '../../components/Core/Footer';
-
+import HeaderView from '../components/Core/Header';
+import FooterView from '../components/Core/Footer';
 const { Search } = Input;
-
 const { Text } = Typography;
-
 const { Header, Content, Footer, Sider } = Layout;
-
 const SearchProps : any = [];
-
 type MenuItem = Required<MenuProps>['items'][number];
 
 function getItem(
@@ -64,7 +56,7 @@ const App: React.FC = () => {
     return (
       //  <div style={appStyles}>
           
-          <Layout className=' flex min-h-screen overflow-auto'>
+          <Layout className='flex min-h-screen overflow-auto '>
             <HeaderView/>
             <Layout>
                 <Sider width={200}>
