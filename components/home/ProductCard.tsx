@@ -11,8 +11,8 @@ const ProductCard: React.FC = () => (
       <div className='h-48 bg-purple-300'></div>
     }
     actions={[
-        <ShoppingCartOutlined key="add to cart" />,
         <EllipsisOutlined key="ellipsis" />,
+        <ShoppingCartOutlined key="add to cart" />,
     ]}
   >
     <Meta

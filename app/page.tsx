@@ -1,5 +1,6 @@
 "use client"
-import React, {useState} from 'react';
+import axios from 'axios';
+import React, {useState, useEffect} from 'react';
 import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Breadcrumb, Layout, Menu, Button, Input, Typography } from 'antd';
@@ -55,32 +56,52 @@ const onSearch = (value: any, _e: any, info: any) => console.log(info?.source, v
 
 const App: React.FC = () => {
     const [current, setCurrent] = useState('1');
+    const [data, setData] = useState([]);
+
+    useEffect(() => {
+      // Define the URL you want to fetch data from
+      const apiUrl = 'http://localhost:8080/api/product';
+
+      // Make the GET request using Axios
+      fetch('http://localhost:8080/api/product')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json(); // Assuming the response contains JSON data
+        })
+        .then(data => {
+          // Use the 'data' returned from the server
+          console.log(data);
+        })
+        .catch(error => {
+          // Handle any errors that occurred during the fetch
+          console.error('Fetch error:', error);
+        });
+    }, []); // Empty dependency array means this effect runs once after the initial render
 
     return (
-      //  <div style={appStyles}>
-          
-          <Layout className='flex min-h-screen overflow-auto '>
-            <HeaderView/>
-            <Layout>
-                <Sider width={200}>
-                <Menu
-                    mode="inline"
-                    defaultSelectedKeys={['1']}
-                    defaultOpenKeys={['sub1']}
-                    style={{ height: '100%', borderRight: 0 }}
-                    items={items}
-                />
-                </Sider>
-                <Layout style={{ padding: '0 24px 24px' }}>
-                <Content className='w-full min-h-screen'>
-                  <Banner></Banner>
-                  <ProductList></ProductList>
-                </Content>
-                </Layout>
+      <Layout className='flex min-h-screen overflow-auto '>
+        <HeaderView/>
+        <Layout>
+            <Sider width={200}>
+            <Menu
+                mode="inline"
+                defaultSelectedKeys={['1']}
+                defaultOpenKeys={['sub1']}
+                style={{ height: '100%', borderRight: 0 }}
+                items={items}
+            />
+            </Sider>
+            <Layout style={{ padding: '0 24px 24px' }}>
+            <Content className='w-full min-h-screen'>
+              <Banner></Banner>
+              <ProductList></ProductList>
+            </Content>
             </Layout>
-            <FooterView/>
-          </Layout>
-        // </div>
+        </Layout>
+        <FooterView/>
+      </Layout>
     );
 };
 

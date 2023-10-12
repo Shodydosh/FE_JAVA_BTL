@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "antd": "^5.9.4",
+    "axios": "^1.5.1",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest"
@@ -24,5 +25,6 @@
     "postcss": "^8.4.30",
     "tailwindcss": "^3.3.3",
     "typescript": "latest"
-  }
+  },
+  "proxy": "http://localhost:8080"
 }

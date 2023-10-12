@@ -9,7 +9,7 @@ const ProductList = () => {
         <div className='flex flex-wrap -mx-4'>
         {productArray.map((productIndex) => (
             <div key={productIndex} className='w-1/4 px-4 mb-4'>
-            <ProductCard />
+                <ProductCard />
             </div>
         ))}
         </div>
