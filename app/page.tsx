@@ -1,4 +1,5 @@
 "use client"
+import { motion } from "framer-motion"
 import axios from 'axios';
 import React, {useState, useEffect} from 'react';
 import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons';
@@ -9,6 +10,7 @@ import Banner from '../components/home/Banner';
 import ProductList from '../components/home/ProductList';
 import HeaderView from '../components/Core/Header';
 import FooterView from '../components/Core/Footer';
+import LoadingPage from '../components/home/LoadingPage';
 const { Search } = Input;
 const { Text } = Typography;
 const { Header, Content, Footer, Sider } = Layout;
@@ -55,54 +57,64 @@ const items: MenuItem[] = [
 const onSearch = (value: any, _e: any, info: any) => console.log(info?.source, value);
 
 const App: React.FC = () => {
-    const [current, setCurrent] = useState('1');
-    const [data, setData] = useState([]);
+  const [current, setCurrent] = useState('1');
+  const [data, setData] = useState([]);
+  const [product, setProduct] = useState([])
+  const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-      // Define the URL you want to fetch data from
-      const apiUrl = 'http://localhost:8080/api/product';
+  useEffect(() => {
+    // Define the URL you want to fetch data from
+    const apiUrl = 'http://localhost:8080/api/product';
 
-      // Make the GET request using Axios
-      fetch('http://localhost:8080/api/product')
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json(); // Assuming the response contains JSON data
-        })
-        .then(data => {
-          // Use the 'data' returned from the server
-          console.log(data);
-        })
-        .catch(error => {
-          // Handle any errors that occurred during the fetch
-          console.error('Fetch error:', error);
-        });
-    }, []); // Empty dependency array means this effect runs once after the initial render
+    // Make the GET request using Axios
+    fetch('http://localhost:8080/api/product')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json(); // Assuming the response contains JSON data
+      })
+      .then(data => {
+        setProduct(data);
+        setIsLoading(false);
+        // Use the 'data' returned from the server
+        console.log(data);
+      })
+      .catch(error => {
+        // Handle any errors that occurred during the fetch
+        console.error('Fetch error:', error);
+      });
+  }, []); // Empty dependency array means this effect runs once after the initial render
 
-    return (
-      <Layout className='flex min-h-screen overflow-auto '>
-        <HeaderView/>
+  useEffect(() => {}, [isLoading])
+
+  return (
+    isLoading ? (
+      <LoadingPage />
+    ) : (
+      <Layout className='flex min-h-screen overflow-auto animate__animated animate__fade'>
+        <HeaderView />
         <Layout>
-            <Sider width={200}>
+          <Sider width={200}>
             <Menu
-                mode="inline"
-                defaultSelectedKeys={['1']}
-                defaultOpenKeys={['sub1']}
-                style={{ height: '100%', borderRight: 0 }}
-                items={items}
+              mode="inline"
+              defaultSelectedKeys={['1']}
+              defaultOpenKeys={['sub1']}
+              style={{ height: '100%', borderRight: 0 }}
+              items={items}
             />
-            </Sider>
-            <Layout style={{ padding: '0 24px 24px' }}>
+          </Sider>
+          <Layout style={{ padding: '0 24px 24px' }}>
             <Content className='w-full min-h-screen'>
-              <Banner></Banner>
-              <ProductList></ProductList>
+              <Banner />
+              <ProductList productData={product} />
             </Content>
-            </Layout>
+          </Layout>
         </Layout>
-        <FooterView/>
+        <FooterView />
       </Layout>
-    );
+    )
+  );
 };
 
 export default App;
