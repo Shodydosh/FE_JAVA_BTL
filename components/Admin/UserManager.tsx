@@ -65,7 +65,6 @@ const UserManager: React.FC<UserManagerProps> = ({ usersData }) => {
     }
     return (
         <div className='text-black'>
-            <h1>User Manager</h1>
             <Table
                 columns={columns}
                 expandable={{

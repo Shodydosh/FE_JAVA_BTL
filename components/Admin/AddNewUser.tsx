@@ -1,137 +1,126 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Col, DatePicker, Drawer, Form, Input, Row, Select, Space } from 'antd';
+import { message, Button, Col, Drawer, Form, Input, Row, Select, Space } from 'antd';
 
 const { Option } = Select;
 
 const AddNewUser: React.FC = () => {
   const [open, setOpen] = useState(false);
+  const [formValues, setFormValues] = useState({
+    name: '',
+    password: '',
+    email: '',
+    role: 'client',
+  });
 
-  const showDrawer = () => {
-    setOpen(true);
-  };
+    const handleSubmitForm = () => {
+        // Check form values for validation
+        if (formValues.name === "" || formValues.password === "" || formValues.email === "") {
+            message.error('Please fill in all required fields.')
+            console.log("🚀 ~ file: AddNewUser.tsx:22 ~ handleSubmitForm ~ formValues:", formValues)
+            return;
+        }
+        console.log("💕💕💕 ~ file: AddNewUser.tsx:22 ~ handleSubmitForm ~ formValues:", formValues)
 
-  const onClose = () => {
-    setOpen(false);
-  };
+        // If the form is valid, you can proceed to perform your desired action
+        // For example, you can make an API request to create a new user with the formValues
+        // Example: callCreateUserAPI(formValues);
 
-  return (
-    <>
-        <Button type="default" onClick={showDrawer} icon={<PlusOutlined />}>
-            New user
-        </Button>
-        <Drawer
-            title="Create a new user"
-            width={720}
-            onClose={onClose}
-            open={open}
-            extra={
-            <Space>
-                <Button onClick={onClose}>Cancel</Button>
-                <Button onClick={onClose} type="default">
-                Submit
-                </Button>
-            </Space>
-            }
-        >
-            <Form layout="vertical">
-                <Row gutter={16}>
-                    <Col span={12}>
-                    <Form.Item
-                        name="name"
-                        label="Name"
-                        rules={[{ required: true, message: 'Please enter user name' }]}
-                    >
-                        <Input placeholder="Please enter user name" />
-                    </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                    <Form.Item
-                        name="url"
-                        label="Url"
-                        rules={[{ required: true, message: 'Please enter url' }]}
-                    >
-                        <Input
-                        style={{ width: '100%' }}
-                        addonBefore="http://"
-                        addonAfter=".com"
-                        placeholder="Please enter url"
-                        />
-                    </Form.Item>
-                    </Col>
-                </Row>
-                <Row gutter={16}>
-                    <Col span={12}>
-                    <Form.Item
-                        name="owner"
-                        label="Owner"
-                        rules={[{ required: true, message: 'Please select an owner' }]}
-                    >
-                        <Select placeholder="Please select an owner">
-                        <Option value="xiao">Xiaoxiao Fu</Option>
-                        <Option value="mao">Maomao Zhou</Option>
-                        </Select>
-                    </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                    <Form.Item
-                        name="type"
-                        label="Type"
-                        rules={[{ required: true, message: 'Please choose the type' }]}
-                    >
-                        <Select placeholder="Please choose the type">
-                        <Option value="private">Private</Option>
-                        <Option value="public">Public</Option>
-                        </Select>
-                    </Form.Item>
-                    </Col>
-                </Row>
-                <Row gutter={16}>
-                    <Col span={12}>
-                    <Form.Item
-                        name="approver"
-                        label="Approver"
-                        rules={[{ required: true, message: 'Please choose the approver' }]}
-                    >
-                        <Select placeholder="Please choose the approver">
-                        <Option value="jack">Jack Ma</Option>
-                        <Option value="tom">Tom Liu</Option>
-                        </Select>
-                    </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                    <Form.Item
-                        name="dateTime"
-                        label="DateTime"
-                        rules={[{ required: true, message: 'Please choose the dateTime' }]}
-                    >
-                        <DatePicker.RangePicker
-                        style={{ width: '100%' }}
-                        getPopupContainer={(trigger) => trigger.parentElement!}
-                        />
-                    </Form.Item>
-                    </Col>
-                </Row>
-                <Row gutter={16}>
-                    <Col span={24}>
-                    <Form.Item
-                        name="description"
-                        label="Description"
-                        rules={[
-                        {
-                            required: true,
-                            message: 'please enter url description',
-                        },
-                        ]}
-                    >
-                        <Input.TextArea rows={4} placeholder="please enter url description" />
-                    </Form.Item>
-                    </Col>
-                </Row>
-            </Form>
-        </Drawer>
-    </>
-  );
+        // After a successful action, you can close the drawer
+    };
+
+    const showDrawer = () => {
+        setOpen(true);
+    };
+
+    const onClose = () => {
+        setOpen(false);
+    };
+
+    return (
+        <>
+            <Button type="default" onClick={showDrawer} icon={<PlusOutlined />}>
+                New user
+            </Button>
+            <Drawer
+                title={`Add new user`}
+                width={600}
+                onClose={onClose}
+                open={open}
+                extra={
+                <Space>
+                    <Button onClick={onClose}>Cancel</Button>
+                    <Button onClick={handleSubmitForm} type="default">
+                        Create
+                    </Button>
+                </Space>
+                }
+            >
+                <Form layout="vertical">
+                    <Row gutter={16}>
+                        <Col span={20}>
+                        <Form.Item
+                            name="name"
+                            label="Name"
+                            rules={[{ required: true, message: 'Please enter user name' }]}
+                        >
+                            <Input 
+                                value={formValues.name} 
+                                onChange={(e) => setFormValues({ ...formValues, name: e.target.value })}
+                            />
+                        </Form.Item>
+                        </Col>
+                    </Row>
+                    <Row gutter={16}>
+                    <Col span={20}>
+                        <Form.Item
+                            name="password"
+                            label="Password"
+                            rules={[{ required: true, message: 'Please enter password' }]}
+                        >
+                            <Input 
+                                value={formValues.password} 
+                                onChange={(e) => setFormValues({ ...formValues, password: e.target.value })}
+                            />
+                        </Form.Item>
+                        </Col>
+                    </Row>
+                    
+                    <Row gutter={16}>
+                        <Col span={20}>
+                        <Form.Item
+                            name="email"
+                            label="Email"
+                            rules={[{ required: true, message: 'Please enter email' }]}
+                        >
+                            <Input 
+                                value={formValues.email} 
+                                onChange={(e) => setFormValues({ ...formValues, email: e.target.value })}
+                            />
+                        </Form.Item>
+                        </Col>
+                    </Row>    
+                    <Row gutter={16}>
+                        <Col span={20}>
+                            <Form.Item
+                            name="role"
+                            label="Role"
+                            rules={[{ required: true, message: 'Please select an role' }]}
+                            >
+                                <Select
+                                    value={formValues.role}
+                                    onChange={(value) => setFormValues({ ...formValues, role: value })}
+                                >
+                                    <Option value="client">Client</Option>
+                                    <Option value="admin">Admin</Option>
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                </Form>
+            </Drawer>
+        </>
+    );
 };
 
 export default AddNewUser;

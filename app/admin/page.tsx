@@ -113,7 +113,8 @@ const AdminPage = () => {
               {
                 selectedMenuItem === "user" 
                 ? <div>
-                    <div className='flex justify-end'>
+                    <div className='flex justify-between mt-4 mb-8'>
+                      <h1 className='text-3xl font-bold text-black'>User Manager</h1>
                       <AddNewUser />
                     </div>
                     <UserManager usersData = {usersData}/> 
