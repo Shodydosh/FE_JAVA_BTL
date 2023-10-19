@@ -1,35 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import { PlusOutlined } from '@ant-design/icons';
-import { message, Button, Col, Drawer, Form, Input, Row, Select, Space } from 'antd';
-
+'use client'
+import React, { useState } from 'react';
+import axios from 'axios';
+import { EditOutlined } from '@ant-design/icons';
+import { Button, Col, message, Drawer, Form, Input, Row, Select, Space } from 'antd';
 const { Option } = Select;
+import { UserManagerProps, UserProps } from '../../../interfaces/UserInterfaces'
 
-const AddNewUser: React.FC = () => {
-  const [open, setOpen] = useState(false);
-  const [formValues, setFormValues] = useState({
-    name: '',
-    password: '',
-    email: '',
-    role: 'client',
-  });
+interface ThisProps {
+    userData: UserProps;
+}
+
+const UpdateUserDrawer: React.FC<ThisProps> = ({ userData }) => {
+    const [open, setOpen] = useState(false);
+    const [formValues, setFormValues] = useState({
+        name: userData.name,
+        password: userData.password,
+        email: userData.email,
+        role: userData.role,
+    });
 
     const handleSubmitForm = () => {
-        // Check form values for validation
+        const addApiUrl = `http://localhost:8080/api/admin/users/update?id=${userData.id}`;
         if (formValues.name === "" || formValues.password === "" || formValues.email === "") {
             message.error('Please fill in all required fields.')
             console.log("🚀 ~ file: AddNewUser.tsx:22 ~ handleSubmitForm ~ formValues:", formValues)
             return;
         }
-        console.log("💕💕💕 ~ file: AddNewUser.tsx:22 ~ handleSubmitForm ~ formValues:", formValues)
-
-        // If the form is valid, you can proceed to perform your desired action
-        // For example, you can make an API request to create a new user with the formValues
-        // Example: callCreateUserAPI(formValues);
+        
+        axios
+            .post(addApiUrl, formValues)
+            .then((response) => {
+                console.log('Success:', response.data);
+                message.success('User update successfully');
+                setTimeout(() => {setOpen(false)}, 500)
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
 
         // After a successful action, you can close the drawer
     };
 
     const showDrawer = () => {
+        console.log("EDITING THIS USER", userData);
         setOpen(true);
     };
 
@@ -39,11 +52,10 @@ const AddNewUser: React.FC = () => {
 
     return (
         <>
-            <Button type="default" onClick={showDrawer} icon={<PlusOutlined />}>
-                New user
+            <Button className='mr-2' type="default" onClick={showDrawer} icon={<EditOutlined />}>
             </Button>
             <Drawer
-                title={`Add new user`}
+                title={`Update user ${userData.id}`}
                 width={600}
                 onClose={onClose}
                 open={open}
@@ -51,7 +63,7 @@ const AddNewUser: React.FC = () => {
                 <Space>
                     <Button onClick={onClose}>Cancel</Button>
                     <Button onClick={handleSubmitForm} type="default">
-                        Create
+                        Update
                     </Button>
                 </Space>
                 }
@@ -66,6 +78,7 @@ const AddNewUser: React.FC = () => {
                         >
                             <Input 
                                 value={formValues.name} 
+                                defaultValue={formValues.name} 
                                 onChange={(e) => setFormValues({ ...formValues, name: e.target.value })}
                             />
                         </Form.Item>
@@ -80,6 +93,7 @@ const AddNewUser: React.FC = () => {
                         >
                             <Input 
                                 value={formValues.password} 
+                                defaultValue={formValues.password} 
                                 onChange={(e) => setFormValues({ ...formValues, password: e.target.value })}
                             />
                         </Form.Item>
@@ -94,7 +108,9 @@ const AddNewUser: React.FC = () => {
                             rules={[{ required: true, message: 'Please enter email' }]}
                         >
                             <Input 
+                                disabled={true}
                                 value={formValues.email} 
+                                defaultValue={formValues.email} 
                                 onChange={(e) => setFormValues({ ...formValues, email: e.target.value })}
                             />
                         </Form.Item>
@@ -109,6 +125,7 @@ const AddNewUser: React.FC = () => {
                             >
                                 <Select
                                     value={formValues.role}
+                                    defaultValue={formValues.role}
                                     onChange={(value) => setFormValues({ ...formValues, role: value })}
                                 >
                                     <Option value="client">Client</Option>
@@ -123,4 +140,4 @@ const AddNewUser: React.FC = () => {
     );
 };
 
-export default AddNewUser;
+export default UpdateUserDrawer;
