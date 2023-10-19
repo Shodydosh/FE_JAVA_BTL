@@ -1,30 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
 import { message, Button, Col, Drawer, Form, Input, Row, Select, Space } from 'antd';
+import axios from 'axios';
 
 const { Option } = Select;
 
 const AddNewUser: React.FC = () => {
-  const [open, setOpen] = useState(false);
-  const [formValues, setFormValues] = useState({
-    name: '',
-    password: '',
-    email: '',
-    role: 'client',
-  });
+    const [open, setOpen] = useState(false);
+    const [formValues, setFormValues] = useState({
+        name: '',
+        password: '',
+        email: '',
+        role: 'client',
+    });
 
     const handleSubmitForm = () => {
-        // Check form values for validation
+        const addApiUrl = 'http://localhost:8080/api/admin/users/add';
         if (formValues.name === "" || formValues.password === "" || formValues.email === "") {
             message.error('Please fill in all required fields.')
             console.log("🚀 ~ file: AddNewUser.tsx:22 ~ handleSubmitForm ~ formValues:", formValues)
             return;
         }
-        console.log("💕💕💕 ~ file: AddNewUser.tsx:22 ~ handleSubmitForm ~ formValues:", formValues)
-
-        // If the form is valid, you can proceed to perform your desired action
-        // For example, you can make an API request to create a new user with the formValues
-        // Example: callCreateUserAPI(formValues);
+        
+        axios
+            .post(addApiUrl, formValues)
+            .then((response) => {
+                console.log('Success:', response.data);
+                setTimeout(() => {setOpen(false)}, 500)
+                message.success(response.data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
 
         // After a successful action, you can close the drawer
     };

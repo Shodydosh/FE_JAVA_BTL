@@ -7,9 +7,9 @@ import type { MenuProps } from 'antd';
 type MenuItem = Required<MenuProps>['items'][number];
 
 import LoadingPage from '../../components/home/LoadingPage';
-import UserManager from '../../components/Admin/UserManager';
-import ProductManager from '../../components/Admin/ProductManager';
-import AddNewUser from '../../components/Admin/AddNewUser';
+import UserManager from '../../components/Admin/User/UserManager';
+import ProductManager from '../../components/Admin/Product/ProductManager';
+import AddNewUser from '../../components/Admin/User/AddNewUser';
 
 function getItem(
     label: React.ReactNode,
