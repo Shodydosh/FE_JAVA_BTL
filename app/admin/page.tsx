@@ -11,6 +11,8 @@ import UserManager from '../../components/Admin/User/UserManager';
 import ProductManager from '../../components/Admin/Product/ProductManager';
 import AddNewUser from '../../components/Admin/User/AddNewUser';
 
+import AddProductButton from '../../components/Admin/Product/AddProductButton';
+
 function getItem(
     label: React.ReactNode,
     key?: React.Key | null, 
@@ -119,7 +121,14 @@ const AdminPage = () => {
                     </div>
                     <UserManager usersData = {usersData}/> 
                   </div>
-                : <ProductManager productsData = {productsData}/>
+                : 
+                <div>
+                  <div className='flex justify-between mt-4 mb-8'>
+                    <h1 className='text-3xl font-bold text-black'>Product Manager</h1>
+                    <AddProductButton/>
+                  </div>
+                  <ProductManager productsData = {productsData}/>
+                </div>
               }
             </Content>
           </Layout>
