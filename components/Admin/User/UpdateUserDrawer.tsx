@@ -25,9 +25,9 @@ const UpdateUserDrawer: React.FC<ThisProps> = ({ userData }) => {
         const addApiUrl = `http://localhost:8080/api/admin/users/update?id=${userData.id}`;
         if (formValues.name === "" || formValues.password === "" || formValues.email === "") {
             message.error('Please fill in all required fields.')
-            console.log("🚀 ~ file: AddNewUser.tsx:22 ~ handleSubmitForm ~ formValues:", formValues)
             return;
         }
+        console.log("🚀 ~ file: AddNewUser.tsx:22 ~ handleSubmitForm ~ formValues:", formValues)
         
         axios
             .post(addApiUrl, formValues)
