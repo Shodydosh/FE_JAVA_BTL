@@ -1,0 +1,5 @@
+# không cho prettier format những folder / file bên dưới
+node_modules
+.next
+package-lock.json
+public/
