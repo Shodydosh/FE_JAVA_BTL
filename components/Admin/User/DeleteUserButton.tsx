@@ -8,6 +8,7 @@ interface ThisProps {
     userData: UserProps;
 }
 
+
 const DeleteUserButton: React.FC<ThisProps> = ({userData}) => {
     const [open, setOpen] = useState(false);
     const [confirmLoading, setConfirmLoading] = useState(false);
