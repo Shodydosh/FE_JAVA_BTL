@@ -1,5 +1,5 @@
-import React from 'react'
-import ProductCard from './ProductCard'
+import React from 'react';
+import ProductCard from './ProductCard';
 
 interface Product {
   id: string;
@@ -22,10 +22,8 @@ const ProductList = (props : any) => {
             <div key={product.id} className='w-1/4 px-4 mb-4'>
                 <ProductCard data={product}/>
             </div>
-        ))}
-        </div>
-    </>
-  )
-}
+        </>
+    );
+};
 
-export default ProductList
+export default ProductList;

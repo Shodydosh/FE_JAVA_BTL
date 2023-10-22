@@ -1,32 +1,37 @@
 {
-  "name": "my-project",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "animate.css": "^4.1.1",
-    "antd": "^5.9.4",
-    "axios": "^1.5.1",
-    "framer-motion": "^10.16.4",
-    "next": "latest",
-    "react": "latest",
-    "react-dom": "latest"
-  },
-  "devDependencies": {
-    "@types/node": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "autoprefixer": "^10.4.16",
-    "eslint": "latest",
-    "eslint-config-next": "latest",
-    "postcss": "^8.4.30",
-    "tailwindcss": "^3.3.3",
-    "typescript": "latest"
-  },
-  "proxy": "http://localhost:8080"
+    "name": "my-project",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "dev:fast": "next dev --turbo",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint",
+        "format:check": "prettier --check . --cache",
+        "format:fix": "prettier --write . --cache"
+    },
+    "dependencies": {
+        "antd": "^5.9.4",
+        "axios": "^1.5.1",
+        "next": "latest",
+        "react": "latest",
+        "react-dom": "latest",
+        "swr": "^2.2.4",
+        "use-debounce": "^9.0.4"
+    },
+    "devDependencies": {
+        "@types/node": "latest",
+        "@types/react": "latest",
+        "@types/react-dom": "latest",
+        "autoprefixer": "^10.4.16",
+        "eslint": "latest",
+        "eslint-config-next": "latest",
+        "postcss": "^8.4.30",
+        "prettier": "^3.0.3",
+        "prettier-plugin-tailwindcss": "^0.5.6",
+        "tailwindcss": "^3.3.3",
+        "typescript": "latest"
+    },
+    "proxy": "http://localhost:8080"
 }
