@@ -115,5 +115,4 @@ const Header = () => {
         </HeaderComponent>
     );
 };
-//anh ơi mất cái quantity rồi hay sao ấy ạ ? cái nào á em cái số 1 ở giỏ hàng ấy anh cái này đúng ko
 export default Header;

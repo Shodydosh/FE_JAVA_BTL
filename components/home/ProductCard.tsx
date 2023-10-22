@@ -10,7 +10,6 @@ interface ProductCardProps {
     productOldPrice: string;
     productNewPrice: string;
 }
-
 const ProductCard: React.FC<ProductCardProps> = ({
     productName,
     productInfo,

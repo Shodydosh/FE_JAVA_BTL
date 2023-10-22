@@ -1,156 +1,102 @@
 'use client';
-import React, { useState } from 'react';
 
-import {
-    Breadcrumb,
-    Layout,
-    Menu,
-    Button,
-    Input,
-    Typography,
-    Checkbox,
-} from 'antd';
-
-import {
-    EnvironmentOutlined,
-    PhoneOutlined,
-    MailOutlined,
-    DeleteOutlined,
-} from '@ant-design/icons';
-
-import Image from 'next/image';
-
-import HeaderView from '../../components/Core/Header';
-
-import FooterView from '../../components/Core/Footer';
-
-import ghn from 'app/assets/images/ghn.png';
-
-import ghtk from 'app/assets/images/ghtk.png';
+import { useMemo } from 'react';
+import CartDetailItem from './_components/CartDetailItem';
+import { productArray } from './_data';
+import useLocalStorageState from 'use-local-storage-state';
+import { concurrencyFormat } from '@/utils/concurrency-format';
+import { Button } from 'antd';
+import { useRouter } from 'next/navigation';
 
 const CartPage: React.FC = () => {
-    const [current, setCurrent] = useState('1');
+    const [cartInfo, setCartInfo] = useLocalStorageState('cart-info');
+    const router = useRouter();
 
-    const [selected, setSelected] = useState<boolean>(false);
+    const calcTotalPrice = useMemo(() => {
+        if (!cartInfo || !Array.isArray(cartInfo)) return 0;
 
-    const [isHovered, setIsHovered] = useState(false);
+        return cartInfo.reduce((prev, curr) => {
+            return prev + Number(curr.newPrice) * curr.quantity;
+        }, 0);
+    }, [cartInfo]);
 
-    const onChange = (e: any) => {
-        setSelected(e.target.checked);
+    const quantityChangeHandler = (value: number, id: number) => {
+        if (!cartInfo || !Array.isArray(cartInfo)) return;
+        // tìm index của product trong array cần update
+        const getProductIndex = cartInfo.findIndex((x) => x.id === id);
+
+        // nếu product được tìm không tồn tại thì sẽ return dừng thực thi tiếp
+        if (getProductIndex === -1) {
+            return;
+        }
+
+        cartInfo[getProductIndex].quantity = value;
+        setCartInfo([...cartInfo]);
     };
 
+    const removeHandler = (id: number) => {
+        if (!cartInfo || !Array.isArray(cartInfo)) return;
+
+        const filterCart = cartInfo.filter((x) => x.id !== id);
+        setCartInfo([...filterCart]);
+    };
+
+    const checkoutHandler = () => {
+        console.log('next step');
+    };
+
+    if (!cartInfo || !Array.isArray(cartInfo)) {
+        return (
+            <div className="p-10">
+                Không tìm thấy sản phẩm nào trong giỏ hàng
+            </div>
+        );
+    }
+
     return (
-        //  <div style={appStyles}>
-        <Layout>
-            <div className=" min-h-screen overflow-auto w-[40%] mx-auto ">
-                <div className="flex justify-center text-[18px] mt-4 border-b">
-                    <span
-                        className="font-semibold mb-2"
-                        style={{ color: '#1890ff' }}
-                    >
-                        Giỏ hàng của bạn
-                    </span>
-                </div>
-                {/* <div style={{marginTop: 4}}>
-                    <Checkbox onChange={onChange} checked={selected} defaultChecked={false} >
-                        Chọn tất cả
-                    </Checkbox>        
-                </div> */}
-                <div
-                    style={{
-                        height: 670,
-                        backgroundColor: 'white',
-                        borderRadius: '10px',
-                        border: '2px solid #1890ff',
-                        boxShadow: '0 0 10px rgba(0, 0, 255, 0.5)',
-                    }}
+        <div className="mx-auto min-h-screen w-1/2">
+            <div className="mt-4 flex justify-center border-b text-[18px]">
+                <span
+                    className="mb-2 font-semibold"
+                    style={{ color: '#1890ff' }}
                 >
-                    <div className="flex justify-between mt-4 ml-4">
-                        <Image src={ghn} alt="My Image" className="w-20 h-20" />
-                        <div className="flex-row mr-4 ">
-                            <div className="mb-1">
-                                <span className="font-bold">
-                                    Chuột không dây S88 Office Pro1 Mới
-                                </span>
-                            </div>
-                            <div className="mb-1">
-                                <span
-                                    style={{ color: 'red' }}
-                                    className="font-bold"
-                                >
-                                    159.000 &#8363;
-                                </span>
-                            </div>
-                            <div>
-                                <span>Chọn số lượng:</span>
-                                <div
-                                    className="ml-2"
-                                    style={{
-                                        border: '0.01px solid black',
-                                        display: 'inline-block',
-                                        borderRadius: 2,
-                                    }}
-                                >
-                                    <button id="decrease" className="ml-2">
-                                        -
-                                    </button>
-                                    <input
-                                        type="text"
-                                        id="quantity"
-                                        value="1"
-                                        style={{
-                                            width: 40,
-                                            textAlign: 'center',
-                                        }}
-                                    />
-                                    <button id="increase" className="mr-2">
-                                        +
-                                    </button>
-                                </div>
-                                <DeleteOutlined
-                                    style={{ marginLeft: 8 }}
-                                    onMouseEnter={() => setIsHovered(true)}
-                                    onMouseLeave={() => setIsHovered(false)}
-                                />
-                                <div
-                                    className={`dropdown ${
-                                        isHovered ? 'visible' : ''
-                                    }`}
-                                    style={{
-                                        display: 'none',
-                                        position: 'absolute',
-                                        backgroundColor: '#ffffff',
-                                        padding: '8px',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '4px',
-                                        marginTop: '4px',
-                                        marginLeft: '-8px',
-                                    }}
-                                    onMouseEnter={() => setIsHovered(true)}
-                                    onMouseLeave={() => setIsHovered(false)}
-                                >
-                                    Xóa khỏi giỏ hàng
-                                </div>
-                            </div>
-                        </div>
+                    Giỏ hàng của bạn
+                </span>
+            </div>
+
+            <div className="h-auto min-h-[inherit] rounded-md border-2 border-blue-400 bg-white shadow">
+                {cartInfo.map((cart) => (
+                    <CartDetailItem
+                        key={cart.id}
+                        cart={cart}
+                        onQuantityChange={quantityChangeHandler}
+                        onRemove={removeHandler}
+                    />
+                ))}
+            </div>
+
+            <div className="mt-4 flex flex-row items-start justify-between">
+                <div className="flex flex-col gap-2">
+                    <div className="font-bold">Tổng số tiền thanh toán:</div>
+                    <div className="text-sm">- Số lượng: {cartInfo.length}</div>
+                    <div>
+                        Thành tiền:{' '}
+                        <span className="text-lg font-bold text-red-500">
+                            {concurrencyFormat(calcTotalPrice)}
+                        </span>
                     </div>
-                    <div className="w-72 h-fit group">
-                        <div className="relative overflow-hidden">
-                            <DeleteOutlined style={{ marginLeft: 8 }} />
-                            <div className="absolute  flex flex-col items-center justify-center -bottom-10 group-hover:bottom-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                                <span
-                                    className="bg-black text-white "
-                                    style={{ borderRadius: 2 }}
-                                >
-                                    Xóa khỏi giỏ hàng
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                </div>
+                <div>
+                    <Button
+                        size="large"
+                        type="primary"
+                        onClick={checkoutHandler}
+                    >
+                        Thanh toán
+                    </Button>
                 </div>
             </div>
-            <FooterView />
-        </Layout>
+        </div>
     );
 };
 
