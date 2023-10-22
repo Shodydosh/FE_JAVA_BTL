@@ -9,7 +9,6 @@ interface GlobalLayoutProps extends PropsWithChildren {}
 export default function GlobalLayout({ children }: GlobalLayoutProps) {
     return (
         <Layout>
-            <Header />
             <Layout>{children}</Layout>
         </Layout>
     );
