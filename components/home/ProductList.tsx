@@ -1,6 +1,7 @@
 import React from 'react';
 import ProductCard from './ProductCard';
 
+<<<<<<< HEAD
 // const productArray = [1,1,1,1,1,1,1,1,1,1,1,1,1]
 const productArray = [
     {
@@ -58,6 +59,28 @@ const ProductList = () => {
                         />
                     </div>
                 ))}
+=======
+interface Product {
+  id: string;
+  retailer: string;
+  img_url: string;
+  name: string;
+  price: string;
+  url: string;
+  category: string;
+}
+
+const ProductList = (props : any) => {
+  const {productData} = props; 
+  console.log("🚀 ~ file: ProductList.tsx:7 ~ ProductList ~ productData:", productData)
+  return (
+    <>
+        <h1 className='my-8 text-3xl font-bold text-blue-500'>Product List</h1>
+        <div className='flex flex-wrap -mx-4'>
+        {productData && productData.slice(0,20).map((product: Product) => (
+            <div key={product.id} className='w-1/4 px-4 mb-4'>
+                <ProductCard data={product}/>
+>>>>>>> 2b5724ad726ee2c764e35c4a7602a8ff47bab676
             </div>
         </>
     );

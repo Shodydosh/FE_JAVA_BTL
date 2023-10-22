@@ -9,7 +9,6 @@ import type { MenuProps } from 'antd';
 import { Breadcrumb, Layout, Menu, Button, Input, Typography } from 'antd';
 
 import Banner from '../../components/home/Banner';
-import ProductList from '../../components/home/ProductList';
 import HeaderView from '../../components/Core/Header';
 import FooterView from '../../components/Core/Footer';
 
