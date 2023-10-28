@@ -14,7 +14,7 @@
     "dependencies": {
         "antd": "^5.9.4",
         "axios": "^1.5.1",
-        "next": "latest",
+        "next": "^14.0.1-canary.1",
         "react": "latest",
         "react-dom": "latest",
         "swr": "^2.2.4",

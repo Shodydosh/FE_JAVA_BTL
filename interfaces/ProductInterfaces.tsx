@@ -9,5 +9,5 @@ export interface ProductProps {
 }
 
 export interface ProductManagerProps {
-    productsData: Array<ProductProps>;
+    productsData: ProductProps[];
 }

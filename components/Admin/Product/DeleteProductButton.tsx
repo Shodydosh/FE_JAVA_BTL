@@ -1,9 +1,11 @@
-import React from 'react'
-
-const DeleteProductButton = () => {
-  return (
-    <div>DeleteProductButton</div>
-  )
+import React from 'react';
+import { ProductProps } from '@/interfaces/ProductInterfaces';
+interface ThisProps {
+    productData: ProductProps;
 }
 
-export default DeleteProductButton
+const DeleteProductButton: React.FC<ThisProps> = ({ productData }) => {
+    return <div>DeleteProductButton</div>;
+};
+
+export default DeleteProductButton;
