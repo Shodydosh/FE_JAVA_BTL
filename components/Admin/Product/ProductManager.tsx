@@ -65,10 +65,9 @@ const ProductManager: React.FC<ProductManagerProps> = ({ productsData }) => {
         {
             title: 'Price',
             dataIndex: 'price',
+            // @ts-ignore
             sorter: (a: ProductProps, b: ProductProps) => {
-                if (!a.price) return -1;
-                if (!b.price) return 1;
-                return a.price.localeCompare(b.price);
+                return a.price > b.price;
             },
         },
         // {

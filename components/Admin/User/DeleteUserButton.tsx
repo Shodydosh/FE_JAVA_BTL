@@ -2,10 +2,7 @@ import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { QuestionCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Popconfirm, Button, message } from 'antd';
-import {
-    UserManagerProps,
-    UserProps,
-} from '../../../interfaces/UserInterfaces';
+import { UserProps } from '../../../interfaces/UserInterfaces';
 
 interface ThisProps {
     userData: UserProps;
