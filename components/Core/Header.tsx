@@ -1,4 +1,4 @@
-import React, { ChangeEventHandler, useState } from 'react';
+import React, { ChangeEventHandler, useState, useEffect, useRef } from 'react';
 
 import Image from 'next/image';
 
@@ -23,7 +23,7 @@ import { SearchResult } from '../search';
 import { useDebouncedCallback } from 'use-debounce';
 import { useSearchProduct } from '@/hooks/useSearchProduct';
 
-const { Header: HeaderComponent, Content, Footer, Sider } = Layout;
+const { Header: HeaderComponent } = Layout;
 
 const { Search } = Input;
 
@@ -34,6 +34,26 @@ const Header = () => {
     const [isOpenSearchResult, setIsOpenSearchResult] =
         useState<boolean>(false);
     const { data: searchResults, trigger } = useSearchProduct();
+
+    const searchInputRef = useRef<HTMLDivElement | null>(null);
+
+    const handleOutsideClick = (e: MouseEvent) => {
+        if (
+            searchInputRef.current &&
+            e.target instanceof Node &&
+            !searchInputRef.current.contains(e.target)
+        ) {
+            closeSearchResultHandler();
+        }
+    };
+
+    useEffect(() => {
+        document.addEventListener('click', handleOutsideClick);
+
+        return () => {
+            document.removeEventListener('click', handleOutsideClick);
+        };
+    }, []);
 
     const searchHandler = useDebouncedCallback(
         // function
@@ -50,9 +70,8 @@ const Header = () => {
         },
     );
 
-    const closeSearchResultHandler = (
-        e: React.FocusEvent<HTMLInputElement>,
-    ) => {
+    const closeSearchResultHandler = () => {
+        console.log('closeSearchResultHandler');
         setIsOpenSearchResult(false);
     };
 
@@ -61,7 +80,10 @@ const Header = () => {
     };
 
     return (
-        <HeaderComponent className="sticky left-0 right-0 top-0 z-[9999] flex items-center justify-between bg-white shadow-md">
+        <HeaderComponent
+            ref={searchInputRef}
+            className="sticky left-0 right-0 top-0 z-[9999] flex items-center justify-between bg-white shadow-md"
+        >
             {/* <div className="text-xl text-white">JAVA_BTL</div> */}
             <div className="flex h-full items-center">
                 <div className="mr-4">
@@ -82,11 +104,14 @@ const Header = () => {
                                 HTMLInputElement | HTMLTextAreaElement
                             >,
                         ) => searchHandler(e.target.value)}
-                        onBlur={closeSearchResultHandler}
+                        // onBlur={closeSearchResultHandler}
                     />
 
                     {isOpenSearchResult && searchResults && (
-                        <SearchResult results={searchResults} />
+                        <SearchResult
+                            results={searchResults}
+                            setIsOpenSearchResult={setIsOpenSearchResult}
+                        />
                     )}
                 </div>
             </div>

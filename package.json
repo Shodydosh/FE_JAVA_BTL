@@ -16,7 +16,7 @@
         "antd": "^5.9.4",
         "axios": "^1.5.1",
         "framer-motion": "^10.16.4",
-        "next": "latest",
+        "next": "^13.5.6",
         "react": "latest",
         "react-dom": "latest",
         "swr": "^2.2.4",
