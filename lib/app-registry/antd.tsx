@@ -31,4 +31,3 @@ const StyledComponentsRegistry = ({ children }: React.PropsWithChildren) => {
 };
 
 export default StyledComponentsRegistry;
-// anh thử chuyển folder ấy ạ chứ

@@ -12,13 +12,15 @@
         "format:fix": "prettier --write . --cache"
     },
     "dependencies": {
+        "animate.css": "^4.1.1",
         "antd": "^5.9.4",
         "axios": "^1.5.1",
         "next": "^14.0.1-canary.1",
         "react": "latest",
         "react-dom": "latest",
         "swr": "^2.2.4",
-        "use-debounce": "^9.0.4"
+        "use-debounce": "^9.0.4",
+        "use-local-storage-state": "^19.1.0"
     },
     "devDependencies": {
         "@types/node": "latest",
