@@ -3,6 +3,7 @@
 import { ReactNode } from 'react';
 import { Layout } from 'antd';
 import Header from '@/components/Core/Header';
+import Footer from '@/components/Core/Footer';
 const { Content } = Layout;
 
 export default function HomeLayout({ children }: { children: ReactNode }) {
@@ -18,6 +19,7 @@ export default function HomeLayout({ children }: { children: ReactNode }) {
             >
                 {children}
             </Content>
+            <Footer />
         </Layout>
     );
 }
