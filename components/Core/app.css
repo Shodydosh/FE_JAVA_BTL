@@ -1,0 +1,100 @@
+html {
+    font-size: 62.5%;
+    font-family: "Poppins", sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.title {
+    background: #4096ff;
+    font-weight: bold;
+    color: white;
+}
+
+.login-container,
+.register-container {
+    width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+}
+
+.login-title,
+.register-title {
+    font-size: 30px;
+    font-weight: bold;
+    color: #272727;
+    text-align: center;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 2px;
+    font-weight: 500;
+    font-size: 17px;
+}
+
+.form-group input {
+    display: block;
+    height: 40px;
+    width: 100%;
+    border-radius: 10px;
+    border: 1.5px solid #90bcf1;
+    padding-left: 15px;
+    font-size: 16px;
+    border-bottom-width: 2.5px;
+    transition: all 0.3s ease;
+    margin-bottom: 7px;
+}
+
+.btn-login,
+.btn-register {
+    margin-top: 13px;
+    padding: 10px;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 530;
+    text-align: center;
+    border: none;
+    height: 45px;
+    width: 100%;
+    border-radius: 10px;
+    background: #4096ff;
+    cursor: pointer;
+    outline: none;
+}
+
+.create {
+    font-size: 16px;
+    font-weight: 500;
+    color: #272727;
+    text-align: center;
+    padding: 10px;
+}
+
+.back-login {
+    background-color: #4096ff;
+    font-size: 16px;
+    margin-left: 140px;
+    font-weight: 500;
+    height: 40px;
+}
+
+.signup {
+    background-color: #4096ff;
+    font-size: 16px;
+    margin-top: 10px;
+    font-weight: 550;
+    height: 40px;
+}
+
+.back {
+    font-size: 16px;
+    font-weight: 500;
+    color: #272727;
+    text-align: center;
+    padding: 10px;
+}

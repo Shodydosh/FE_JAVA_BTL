@@ -7,7 +7,7 @@ import { Breadcrumb, Layout, Menu, Button, Input, Typography } from 'antd';
 import Banner from '../components/home/Banner';
 import ProductList from '../components/home/ProductList';
 import HeaderView from '../components/Core/Header';
-import FooterView from '../components/Core/Footer';
+import FooterView from '../components/Core/Footer'; 
 const { Search } = Input;
 const { Text } = Typography;
 const { Header, Content, Footer, Sider } = Layout;

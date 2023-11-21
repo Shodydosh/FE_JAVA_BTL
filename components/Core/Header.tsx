@@ -1,23 +1,22 @@
-import React from 'react'
 
+import React, { useState } from "react";
+import Router from 'next/router';
 import Image from 'next/image';
-
 import { Breadcrumb, Layout, Menu, Button, Input, Typography } from 'antd';
-
 import branch1 from 'app/assets/images/branch1.png';
-
 import bluecart from 'app/assets/images/bluecart.png'
+import Login from './login';
+import Register from './register';
+import './app.css';
 
 const { Header, Content, Footer, Sider } = Layout;
-
 const { Search } = Input;
-
 const { Text } = Typography;
 
 const HeaderView = () => {
-
   const onSearch = (value: any, _e: any, info: any) => console.log(info?.source, value);
-
+  // const token = localStorage.getItem('user');
+  // console.log(token);
   return (
     <Header className='flex items-center justify-between bg-white'>
     {/* <div className="text-xl text-white">JAVA_BTL</div> */}
@@ -46,13 +45,10 @@ const HeaderView = () => {
             1{' '}
           </span>
         </Button>
-      
-      <Button type="primary" className='bg-blue-400'>
-        <Text style={{ fontWeight: 'bold', color: 'white' }}>Login / Sign up</Text>
-      </Button>
+      <Login/>
     </div>
 </Header>
   )
 }
 
-export default HeaderView
+export default HeaderView;
