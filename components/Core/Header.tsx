@@ -14,6 +14,10 @@ import {
     Input,
     Typography,
     Badge,
+    message,
+    Form,
+    Avatar,
+    Dropdown,
 } from 'antd';
 
 import branch1 from '@/app/assets/images/branch1.png';
@@ -22,12 +26,13 @@ import bluecart from '@/app/assets/images/bluecart.png';
 import { SearchResult } from '../search';
 import { useDebouncedCallback } from 'use-debounce';
 import { useSearchProduct } from '@/hooks/useSearchProduct';
+import Link from 'next/link';
+import { useOnClickOutside } from '@/hooks/useClickOutside';
+import { useAuth } from '@/hooks/useAuth';
 
 const { Header: HeaderComponent } = Layout;
 
 const { Search } = Input;
-
-const { Text } = Typography;
 
 const Header = () => {
     const router = useRouter();
@@ -35,25 +40,11 @@ const Header = () => {
         useState<boolean>(false);
     const { data: searchResults, trigger } = useSearchProduct();
 
-    const searchInputRef = useRef<HTMLDivElement | null>(null);
+    const { isLoggedIn, isValidating, mutate } = useAuth();
 
-    const handleOutsideClick = (e: MouseEvent) => {
-        if (
-            searchInputRef.current &&
-            e.target instanceof Node &&
-            !searchInputRef.current.contains(e.target)
-        ) {
-            closeSearchResultHandler();
-        }
-    };
+    const searchRef = useRef<HTMLDivElement | null>(null);
 
-    useEffect(() => {
-        document.addEventListener('click', handleOutsideClick);
-
-        return () => {
-            document.removeEventListener('click', handleOutsideClick);
-        };
-    }, []);
+    useOnClickOutside(searchRef, () => setIsOpenSearchResult(false));
 
     const searchHandler = useDebouncedCallback(
         // function
@@ -70,74 +61,98 @@ const Header = () => {
         },
     );
 
-    const closeSearchResultHandler = () => {
-        console.log('closeSearchResultHandler');
-        setIsOpenSearchResult(false);
-    };
-
     const handleNavigation = () => {
         router.push('/cart');
     };
 
+    const logoutHandler = () => {
+        localStorage.removeItem('token');
+        mutate(null);
+        message.success('Log out succesfully!');
+    };
+
     return (
-        <HeaderComponent
-            ref={searchInputRef}
-            className="sticky left-0 right-0 top-0 z-[9999] flex items-center justify-between bg-white shadow-md"
-        >
-            {/* <div className="text-xl text-white">JAVA_BTL</div> */}
-            <div className="flex h-full items-center">
-                <div className="mr-4">
-                    <Image
-                        src={branch1}
-                        alt="My Image"
-                        width={250}
-                        height={50}
-                        className="bg-center object-cover"
-                    />
-                </div>
-                <div className="relative flex h-full w-[460px] items-center ">
-                    <Search
-                        className="w-full"
-                        placeholder="Search..."
-                        onChange={(
-                            e: React.ChangeEvent<
-                                HTMLInputElement | HTMLTextAreaElement
-                            >,
-                        ) => searchHandler(e.target.value)}
-                        // onBlur={closeSearchResultHandler}
-                    />
-
-                    {isOpenSearchResult && searchResults && (
-                        <SearchResult
-                            results={searchResults}
-                            setIsOpenSearchResult={setIsOpenSearchResult}
+        <>
+            <HeaderComponent className="sticky left-0 right-0 top-0 z-[999] flex items-center justify-between bg-white shadow-md">
+                {/* <div className="text-xl text-white">JAVA_BTL</div> */}
+                <div className="flex h-full items-center">
+                    <div className="mr-4">
+                        <Image
+                            src={branch1}
+                            alt="My Image"
+                            width={250}
+                            height={50}
+                            className="bg-center object-cover"
                         />
-                    )}
-                </div>
-            </div>
-            <div className="flex items-center gap-4">
-                <Badge count={3} overflowCount={99}>
-                    <Button
-                        className="relative border-0"
-                        icon={
-                            <span>
-                                <Image
-                                    src={bluecart}
-                                    width={15}
-                                    height={15}
-                                    alt="cart "
-                                />
-                            </span>
-                        }
-                        onClick={handleNavigation}
-                    />
-                </Badge>
+                    </div>
+                    <div
+                        ref={searchRef}
+                        className="relative flex h-full w-[460px] items-center "
+                    >
+                        <Search
+                            className="w-full"
+                            placeholder="Search..."
+                            onChange={(
+                                e: React.ChangeEvent<
+                                    HTMLInputElement | HTMLTextAreaElement
+                                >,
+                            ) => searchHandler(e.target.value)}
+                        />
 
-                <Button type="primary" className="font-bold">
-                    Login / Sign up
-                </Button>
-            </div>
-        </HeaderComponent>
+                        {isOpenSearchResult && searchResults && (
+                            <SearchResult
+                                results={searchResults}
+                                setIsOpenSearchResult={setIsOpenSearchResult}
+                            />
+                        )}
+                    </div>
+                </div>
+                <div className="flex items-center gap-4">
+                    <Badge count={3} overflowCount={99}>
+                        <Button
+                            className="relative border-0"
+                            icon={
+                                <span>
+                                    <Image
+                                        src={bluecart}
+                                        width={15}
+                                        height={15}
+                                        alt="cart "
+                                    />
+                                </span>
+                            }
+                            onClick={handleNavigation}
+                        />
+                    </Badge>
+
+                    <div>
+                        {!isLoggedIn ? (
+                            <Link href="/login" scroll={false}>
+                                <Button className="title" type="primary">
+                                    Log in / Sign up
+                                </Button>
+                            </Link>
+                        ) : (
+                            <Dropdown
+                                menu={{
+                                    items: [
+                                        {
+                                            label: 'Đăng xuất',
+                                            key: '0',
+                                            danger: true,
+                                            onClick: logoutHandler,
+                                        },
+                                    ],
+                                }}
+                                trigger={['click']}
+                            >
+                                <Avatar>U</Avatar>
+                            </Dropdown>
+                        )}
+                    </div>
+                </div>
+            </HeaderComponent>
+        </>
     );
 };
 export default Header;
