@@ -25,10 +25,7 @@ const SearchResult = (props: SearchResultProps) => {
     const router = useRouter();
 
     return (
-        <div
-            style={{ backgroundColor: 'red' }}
-            className="absolute left-0 right-0 top-[64px] h-auto max-h-[500px] overflow-y-auto rounded-b-md bg-white p-4 pt-3 shadow-md"
-        >
+        <div className="absolute left-0 right-0 top-[64px] h-auto max-h-[500px] overflow-y-auto rounded-b-md bg-white p-4 pt-3 shadow-md">
             <div>
                 <h3 className="mb-4 text-base font-bold">Kết quả tìm kiếm</h3>
             </div>
