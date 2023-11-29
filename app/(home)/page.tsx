@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import {
+    RightOutlined,
     LaptopOutlined,
     NotificationOutlined,
     UserOutlined,
@@ -38,26 +39,7 @@ function getItem(
     } as MenuItem;
 }
 
-const items: MenuItem[] = [
-    getItem('All', 'sub1', <LaptopOutlined />),
-    getItem('Laptop', 'sub2', <LaptopOutlined />, [
-        getItem('Dell', '1'),
-        getItem('Asus', '2'),
-        getItem('Acer', '3'),
-        getItem('Apple', '4'),
-    ]),
-    getItem('Tablet', 'sub3', <LaptopOutlined />, [
-        getItem('Apple', '5'),
-        getItem('Xiaomi', '6'),
-        getItem('Samsung', '7'),
-    ]),
-    getItem('Phone', 'sub4', <LaptopOutlined />, [
-        getItem('Apple', '9'),
-        getItem('Xiaomi', '10'),
-        getItem('Apple', '11'),
-        getItem('Xiaomi', '12'),
-    ]),
-];
+const items: MenuItem[] = [getItem('All', 'sub1', <RightOutlined />)];
 
 const onSearch = (value: any, _e: any, info: any) =>
     console.log(info?.source, value);
