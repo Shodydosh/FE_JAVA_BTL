@@ -6,12 +6,12 @@ import {
     MailOutlined,
 } from '@ant-design/icons';
 import Image from 'next/image';
-import branch1 from 'app/assets/images/branch1.png';
-import ghn from 'app/assets/images/ghn.png';
-import ghtk from 'app/assets/images/ghtk.png';
-import ems from 'app/assets/images/ems.png';
-import jandt from 'app/assets/images/jandt.png';
-import money from 'app/assets/images/money.png';
+import branch1 from "../../app/assets/images/branch1.png"
+import ghn from "../../app/assets/images/ghn.png"
+import ghtk from "../../app/assets/images/ghtk.png"
+import ems from "../../app/assets/images/ems.png"
+import jandt from "../../app/assets/images/jandt.png"
+
 const { Text } = Typography;
 const { Header, Content, Footer, Sider } = Layout;
 

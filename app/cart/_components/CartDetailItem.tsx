@@ -8,7 +8,7 @@ import { DeleteOutlined } from '@ant-design/icons';
 
 import Image from 'next/image';
 
-import ghn from 'app/assets/images/ghn.png';
+import ghn from '../../assets/images/ghn.png';
 import { Product } from '@/types/product';
 import { concurrencyFormat } from '@/utils/concurrency-format';
 

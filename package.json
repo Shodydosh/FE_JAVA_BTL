@@ -15,7 +15,7 @@
         "animate.css": "^4.1.1",
         "antd": "^5.9.4",
         "axios": "^1.5.1",
-        "next": "^14.0.1-canary.1",
+        "next": "^14.1.0",
         "react": "latest",
         "react-dom": "latest",
         "react-router-dom": "^6.19.0",
