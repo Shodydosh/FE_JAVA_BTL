@@ -29,7 +29,7 @@ import { useSearchProduct } from '@/hooks/useSearchProduct';
 import Link from 'next/link';
 import { useOnClickOutside } from '@/hooks/useClickOutside';
 import { useAuth } from '@/hooks/useAuth';
-
+import ptit from '@/app/assets/images/ptit.jpg';
 const { Header: HeaderComponent } = Layout;
 
 const { Search } = Input;
@@ -72,33 +72,29 @@ const Header = () => {
     };
 
     return (
-        <>
-            <HeaderComponent className="sticky left-0 right-0 top-0 z-[999] flex items-center justify-between bg-white shadow-md">
-                {/* <div className="text-xl text-white">JAVA_BTL</div> */}
-                <div className="flex h-full items-center">
-                    <div className="mr-4">
+        <HeaderComponent className="sticky left-0 right-0 top-0 z-[999] bg-white shadow-md">
+            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
+                {/* Left section - Logo */}
+                <div className="flex-shrink-0">
+                    <Link href="/" className="flex items-center">
                         <Image
-                            src={branch1}
-                            alt="My Image"
-                            width={250}
-                            height={50}
-                            className="bg-center object-cover"
+                            src={ptit}
+                            alt="PTIT Logo"
+                            width={40}
+                            height={40}
+                            className="rounded object-contain"
                         />
-                    </div>
-                    <div
-                        ref={searchRef}
-                        className="relative flex h-full w-[460px] items-center "
-                    >
-                        <Search
-                            className="w-full"
-                            placeholder="Search..."
-                            onChange={(
-                                e: React.ChangeEvent<
-                                    HTMLInputElement | HTMLTextAreaElement
-                                >,
-                            ) => searchHandler(e.target.value)}
-                        />
+                    </Link>
+                </div>
 
+                {/* Center section - Search */}
+                <div className="mx-4 flex-1 justify-center lg:flex lg:max-w-2xl lg:px-4 mt-6">
+                    <div ref={searchRef} className="relative w-full pt-[2px]">
+                        <Search
+                            className="w-full !h-[32px]"
+                            placeholder="Search products..."
+                            onChange={(e) => searchHandler(e.target.value)}
+                        />
                         {isOpenSearchResult && searchResults && (
                             <SearchResult
                                 results={searchResults}
@@ -107,29 +103,30 @@ const Header = () => {
                         )}
                     </div>
                 </div>
+
+                {/* Right section - Cart & User */}
                 <div className="flex items-center gap-4">
-                    <Badge count={3} overflowCount={99}>
+                    <Badge count={3} size="small">
                         <Button
-                            className="relative border-0"
+                            className="flex items-center justify-center border-none shadow-none hover:bg-gray-50"
                             icon={
-                                <span>
-                                    <Image
-                                        src={bluecart}
-                                        width={15}
-                                        height={15}
-                                        alt="cart "
-                                    />
-                                </span>
+                                <Image
+                                    src={bluecart}
+                                    width={20}
+                                    height={20}
+                                    alt="Shopping Cart"
+                                    className="object-contain"
+                                />
                             }
                             onClick={handleNavigation}
                         />
                     </Badge>
 
-                    <div>
+                    <div className="ml-2">
                         {!isLoggedIn ? (
                             <Link href="/login" scroll={false}>
-                                <Button className="title" type="primary">
-                                    Log in / Sign up
+                                <Button type="primary">
+                                    Login
                                 </Button>
                             </Link>
                         ) : (
@@ -138,7 +135,7 @@ const Header = () => {
                                     items: [
                                         {
                                             label: 'Đăng xuất',
-                                            key: '0',
+                                            key: 'logout',
                                             danger: true,
                                             onClick: logoutHandler,
                                         },
@@ -146,13 +143,14 @@ const Header = () => {
                                 }}
                                 trigger={['click']}
                             >
-                                <Avatar>U</Avatar>
+                                <Avatar className="cursor-pointer bg-primary">U</Avatar>
                             </Dropdown>
                         )}
                     </div>
                 </div>
-            </HeaderComponent>
-        </>
+            </div>
+        </HeaderComponent>
     );
 };
+
 export default Header;

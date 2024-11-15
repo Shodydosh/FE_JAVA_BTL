@@ -3,8 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import axios from 'axios';
 import { useParams } from 'next/navigation';
-import { Divider, Descriptions, Button } from 'antd';
-import type { DescriptionsProps } from 'antd';
+import { Divider, Descriptions, Button, message } from 'antd';
 import { ShoppingCartOutlined } from '@ant-design/icons';
 
 import OtherInfo from '@/components/ProductPage/OtherInfo';
@@ -15,6 +14,7 @@ const ProductPage = () => {
     const [productData, setProductData] = useState<any>({});
     const [otherProducts, setOtherProducts] = useState<any>([]);
     const [fetchDone, setFetchDone] = useState<boolean>(false);
+    const [cart, setCart] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -32,14 +32,12 @@ const ProductPage = () => {
 
                         // Filter out the item with the same ID as productResponse.data.id
                         const filteredItems = categoryResponse.data.filter(
-                            //@ts-ignore
                             (item) => item.id !== productResponse.data.id,
                         );
 
                         // Select the first 5 items from the filtered data
                         const selectedItems = filteredItems.slice(0, 5);
                         setOtherProducts(selectedItems);
-                        // Use the selected items as needed
                         setFetchDone(true);
                     }
                 }
@@ -51,8 +49,38 @@ const ProductPage = () => {
         fetchData();
     }, [params]);
 
+    const addToCart = async (product) => {
+        try {
+            const response = await axios.post(
+                `http://localhost:8080/api/cartitems/add/59cd9ce2-1b15-4fe9-a775-9169fc90c907`,
+                {
+                    product: {
+                        id: product.id,
+                        retailer: product.retailer,
+                        img_url: product.img_url,
+                        name: product.name,
+                        price: product.price,
+                        url: product.url,
+                        category: product.category
+                    },
+                    quantity: 1
+                }
+            );
+            console.log('response:', response);
+            if (response.status === 200) {
+                setCart([...cart, product]);
+                message.success('Product added to cart');
+            } else {
+                message.error('Failed to add product to cart');
+            }
+        } catch (error) {
+            console.error('Error adding product to cart:', error);
+            message.error('Error adding product to cart');
+        }
+    };
+
     // Update the Descriptions items dynamically based on productData
-    const productItems: DescriptionsProps['items'] = [
+    const productItems = [
         {
             key: 'name',
             label: 'Tên sản phẩm',
@@ -69,7 +97,7 @@ const ProductPage = () => {
             key: 'description',
             label: 'Ghi chú',
             children: (
-                <p>
+                <p className="text-gray-600">
                     Bùng nổ hiệu năng, chiến game đỉnh cao Bộ xử lý Intel Core
                     i9 12900H với cấu trúc 14 nhân và 20 luồng có thể xử lý đa
                     nhiệm các công việc phức tạp hay chiến các tựa game nặng như
@@ -98,41 +126,42 @@ const ProductPage = () => {
     ];
 
     return (
-        <div className="m-12">
-            <div className="flex bg-white">
-                {/* <div className="relative h-full w-auto bg-red-500"> */}
-                <Image
-                    src={productData.img_url}
-                    alt="Laptop Image"
-                    objectFit="cover"
-                    className="h-full object-cover"
-                    layout="responsive" // Set layout to responsive
-                    width={400}
-                    height={400}
-                />
-                {/* </div> */}
-                <div className="ml-4">
+        <div className="container mx-auto p-6">
+            <div className="flex flex-col rounded-lg bg-white p-4 shadow-md md:flex-row">
+                <div className="flex-shrink-0">
+                    <Image
+                        src={productData.img_url}
+                        alt="Product Image"
+                        className="rounded-lg object-cover"
+                        width={400}
+                        height={400}
+                    />
+                </div>
+                <div className="flex-grow md:ml-4">
                     <Descriptions
                         title="Thông tin sản phẩm"
                         bordered
                         items={productItems}
                     />
-                    <Button
-                        className="mt-2 bg-blue-500 text-white hover:bg-white"
-                        type="default"
-                        icon={<ShoppingCartOutlined />}
-                        size="large"
-                    >
-                        Add to cart
-                    </Button>
-                    <Button type="link">
-                        Gọi đặt mua 1800.1060 (7:30 - 22:00)
-                    </Button>
+                    <div className="mt-4 flex space-x-2">
+                        <Button
+                            className="bg-blue-500 text-white transition-colors duration-200 hover:bg-blue-600"
+                            type="default"
+                            icon={<ShoppingCartOutlined />}
+                            size="large"
+                            onClick={() => addToCart(productData)}
+                        >
+                            Thêm vào giỏ
+                        </Button>
+                        <Button type="link" className="text-blue-500">
+                            Gọi đặt mua 1800.1060 (7:30 - 22:00)
+                        </Button>
+                    </div>
                 </div>
             </div>
-            <Divider />
+            <Divider className="my-6" />
             <OtherInfo />
-            <Divider />
+            <Divider className="my-6" />
             {fetchDone && <OtherProducts data={otherProducts} />}
         </div>
     );

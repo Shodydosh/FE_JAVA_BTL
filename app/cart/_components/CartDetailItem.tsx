@@ -19,15 +19,22 @@ export interface CartProps extends Product {
     quantity: number;
 }
 
-type CartDetailItemProps = {
-    cart: CartProps;
-    onQuantityChange?: (value: number, id: number) => void;
-    onRemove?: (id: number) => void;
-};
+interface CartDetailItemProps {
+    cart: {
+        id: string;
+        retailer: string;
+        img_url: string;
+        name: string;
+        price: number;
+        url: string;
+        category: string;
+        quantity: number;
+    };
+    onRemove: (id: string) => Promise<void>;
+    onQuantityChange: (qty: number) => void;
+}
 
-const CartDetailItem = (props: CartDetailItemProps) => {
-    const { cart, onQuantityChange, onRemove } = props;
-
+const CartDetailItem: React.FC<CartDetailItemProps> = ({ cart, onRemove, onQuantityChange }) => {
     const { id, name, newPrice, quantity: defaultQuantity = 1, image } = cart;
 
     const [quantity, setQuantity] = useState<number>(defaultQuantity);
@@ -48,71 +55,70 @@ const CartDetailItem = (props: CartDetailItemProps) => {
         setQuantity((prevValue) => prevValue - 1);
     };
 
+    const handleRemove = async () => {
+        try {
+            const response = await fetch(
+                `http://localhost:8080/api/cartitems/delete/59cd9ce2-1b15-4fe9-a775-9169fc90c907/cartitem/${cart.id}`,
+                {
+                    method: 'DELETE',
+                    credentials: 'include',
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error('Failed to delete item');
+            }
+
+            // Call parent's onRemove to update cart state
+            await onRemove(cart.id);
+        } catch (error) {
+            console.error('Error deleting item:', error);
+        }
+    };
+
+    const handleQuantityChange = (value: number | null) => {
+        if (value !== null) {
+            onQuantityChange(value);
+        }
+    };
+
     return (
-        <div className="flex items-start gap-6 p-4">
-            <div>
-                <Image src={image || ghn} alt={name} width={20} height={20} />
+        <div className="flex items-center border-b p-3">
+            <div className="h-16 w-16 flex-shrink-0">
+                <img
+                    src={cart.img_url}
+                    alt={cart.name}
+                    className="h-full w-full object-contain"
+                />
             </div>
-            <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <div>
-                    <span className="line-clamp-2 font-bold">{name}</span>
+            <div className="ml-3 flex flex-1 flex-col gap-1">
+                <div className="text-sm font-medium line-clamp-2">{cart.name}</div>
+                <div className="text-sm text-red-500">
+                    {new Intl.NumberFormat('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND'
+                    }).format(cart.price)}
                 </div>
-
-                <div>
-                    <span className="font-bold text-red-500">
-                        {concurrencyFormat(Number(newPrice) * quantity)}
-                    </span>
-                </div>
-
-                <div className="flex w-full items-center justify-between gap-4">
-                    <div className="flex items-center gap-2">
-                        <div>
-                            <span>Chọn số lượng:</span>
-                        </div>
-
-                        <div className="w-[100px]">
-                            <InputNumber
-                                addonBefore={
-                                    <button
-                                        className="h-full w-full"
-                                        onClick={quantityDecreaseHandler}
-                                    >
-                                        -
-                                    </button>
-                                }
-                                addonAfter={
-                                    <button
-                                        className="h-full w-full"
-                                        onClick={quantityIncreaseHandler}
-                                    >
-                                        +
-                                    </button>
-                                }
-                                controls={false}
-                                min={1}
-                                max={999}
-                                value={quantity}
-                                onChange={(value: number | null) => {
-                                    if (!value) return;
-                                    setQuantity(value);
-                                }}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="">
-                        <Tooltip title="Xóa sản phẩm khỏi giỏ hàng">
-                            <Button
-                                type="text"
-                                danger
-                                icon={<DeleteOutlined />}
-                                onClick={() => onRemove?.(id)}
-                            />
-                        </Tooltip>
-                    </div>
+                <div className="flex items-center gap-2">
+                    <InputNumber 
+                        min={1} 
+                        max={10} 
+                        value={cart.quantity}
+                        onChange={handleQuantityChange}
+                        size="small"
+                        className="w-20"
+                    />
+                    <Button 
+                        type="text" 
+                        size="small"
+                        danger 
+                        icon={<DeleteOutlined />}
+                        onClick={handleRemove}
+                    />
                 </div>
             </div>
         </div>
     );
 };
+
 export default CartDetailItem;

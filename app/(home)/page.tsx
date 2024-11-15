@@ -81,15 +81,6 @@ const App: React.FC = () => {
     ) : (
         <Layout className="animate__animated animate__fade flex min-h-screen overflow-auto">
             <Layout>
-                <Sider width={200}>
-                    <Menu
-                        mode="inline"
-                        defaultSelectedKeys={['1']}
-                        defaultOpenKeys={['sub1']}
-                        style={{ height: '100%', borderRight: 0 }}
-                        items={items}
-                    />
-                </Sider>
                 <Layout style={{ padding: '0 24px 24px' }}>
                     <Content className="min-h-screen w-full">
                         <Banner />
@@ -97,7 +88,6 @@ const App: React.FC = () => {
                     </Content>
                 </Layout>
             </Layout>
-            <FooterView />
         </Layout>
     );
 };
