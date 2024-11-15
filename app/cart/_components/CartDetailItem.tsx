@@ -8,6 +8,8 @@ import { DeleteOutlined } from '@ant-design/icons';
 
 import Image from 'next/image';
 
+import axios from 'axios';
+
 import ghn from '../../assets/images/ghn.png';
 import { Product } from '@/types/product';
 import { concurrencyFormat } from '@/utils/concurrency-format';
@@ -34,7 +36,11 @@ interface CartDetailItemProps {
     onQuantityChange: (qty: number) => void;
 }
 
-const CartDetailItem: React.FC<CartDetailItemProps> = ({ cart, onRemove, onQuantityChange }) => {
+const CartDetailItem: React.FC<CartDetailItemProps> = ({
+    cart,
+    onRemove,
+    onQuantityChange,
+}) => {
     const { id, name, newPrice, quantity: defaultQuantity = 1, image } = cart;
 
     const [quantity, setQuantity] = useState<number>(defaultQuantity);
@@ -56,23 +62,23 @@ const CartDetailItem: React.FC<CartDetailItemProps> = ({ cart, onRemove, onQuant
     };
 
     const handleRemove = async () => {
+        const apiUrl = `http://localhost:8080/api/cartitems/delete/59cd9ce2-1b15-4fe9-a775-9169fc90c907/${cart.id}`;
+
         try {
-            const response = await fetch(
-                `http://localhost:8080/api/cartitems/delete/59cd9ce2-1b15-4fe9-a775-9169fc90c907/cartitem/${cart.id}`,
-                {
-                    method: 'DELETE',
-                    credentials: 'include',
-                }
-            );
+            const response = await axios.delete(apiUrl, {
+                withCredentials: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
 
-            if (!response.ok) {
-                throw new Error('Failed to delete item');
+            if (response.status === 200) {
+                await onRemove(cart.id);
+                console.log('Cart item successfully deleted:', cart.id);
             }
-
-            // Call parent's onRemove to update cart state
-            await onRemove(cart.id);
         } catch (error) {
             console.error('Error deleting item:', error);
+            // Add error handling UI feedback here if needed
         }
     };
 
@@ -92,26 +98,28 @@ const CartDetailItem: React.FC<CartDetailItemProps> = ({ cart, onRemove, onQuant
                 />
             </div>
             <div className="ml-3 flex flex-1 flex-col gap-1">
-                <div className="text-sm font-medium line-clamp-2">{cart.name}</div>
+                <div className="line-clamp-2 text-sm font-medium">
+                    {cart.name}
+                </div>
                 <div className="text-sm text-red-500">
                     {new Intl.NumberFormat('vi-VN', {
                         style: 'currency',
-                        currency: 'VND'
+                        currency: 'VND',
                     }).format(cart.price)}
                 </div>
                 <div className="flex items-center gap-2">
-                    <InputNumber 
-                        min={1} 
-                        max={10} 
+                    <InputNumber
+                        min={1}
+                        max={10}
                         value={cart.quantity}
                         onChange={handleQuantityChange}
                         size="small"
                         className="w-20"
                     />
-                    <Button 
-                        type="text" 
+                    <Button
+                        type="text"
                         size="small"
-                        danger 
+                        danger
                         icon={<DeleteOutlined />}
                         onClick={handleRemove}
                     />

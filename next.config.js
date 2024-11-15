@@ -1,9 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-      domains: ['hanoicomputercdn.com', 'cdn.tgdd.vn', 'i.pinimg.com'], // Add the additional domain here
+        domains: ['hanoicomputercdn.com', 'cdn.tgdd.vn', 'i.pinimg.com', 'your-domain.com'],
     },
-  };
-  
-  module.exports = nextConfig;
-  
+    async rewrites() {
+        return [
+            {
+                source: '/api/:path*',
+                destination: 'http://localhost:8080/api/:path*',
+            },
+        ];
+    },
+};
+
+module.exports = nextConfig;
+
