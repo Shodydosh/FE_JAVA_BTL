@@ -12,6 +12,7 @@
         "format:fix": "prettier --write . --cache"
     },
     "dependencies": {
+        "@emailjs/browser": "^4.4.1",
         "animate.css": "^4.1.1",
         "antd": "^5.9.4",
         "axios": "^1.5.1",

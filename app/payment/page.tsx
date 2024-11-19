@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Form, Input, Button, Radio, notification, Spin } from 'antd';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Core/Header';
+import emailjs from '@emailjs/browser';
 
 const PaymentPage = () => {
     // Khởi tạo các hooks cần thiết
@@ -21,6 +22,40 @@ const PaymentPage = () => {
         }
         setOrderData(JSON.parse(savedOrder));
     }, [router]);
+
+    const sendOrderNotificationToAdmin = async (orderData: any) => {
+        try {
+            const templateParams = {
+                // Parameters for admin notification
+                order_number: orderData.orderId,
+                order_total: new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                }).format(orderData.totalAmount),
+                customer_name: orderData.customerName || 'Khách hàng',
+                shipping_address: orderData.shippingAddress,
+                phone_number: orderData.phoneNumber,
+                payment_method: orderData.paymentMethod === 'COD' ? 'Thanh toán khi nhận hàng' : 'Thanh toán thẻ',
+                order_items: orderData.orderItems.map((item: any) => 
+                    `${item.productId} - SL: ${item.quantity} - Giá: ${new Intl.NumberFormat('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND'
+                    }).format(item.price)}`
+                ).join('\n')
+            };
+
+            const result = await emailjs.send(
+                'service_zbhd07p',
+                'template_r6aj2sh',
+                templateParams,
+                'GMDxfdGqL-yu58YOF',
+            );
+            
+            console.log('Admin notification email sent successfully:', result);
+        } catch (error) {
+            console.error('Error sending admin notification:', error);
+        }
+    };
 
     // Xử lý submit form thanh toán
     const handleSubmit = async (values: any) => {
@@ -62,13 +97,20 @@ const PaymentPage = () => {
                 throw new Error(responseData.message || 'Đặt hàng thất bại');
             }
 
+            // Replace sendOrderConfirmationEmail with sendOrderNotificationToAdmin
+            await sendOrderNotificationToAdmin({
+                ...finalOrderData,
+                orderId: responseData.orderId,
+                customerName: responseData.customerName
+            });
+
             // Xóa đơn hàng tạm thời
             localStorage.removeItem('pendingOrder');
 
             // Hiển thị thông báo thành công
             notification.success({
                 message: 'Đặt hàng thành công',
-                description: 'Cảm ơn bạn đã mua hàng!'
+                description: 'Cảm ơn bạn đã mua hàng! Email xác nhận đã được gửi.'
             });
 
             router.push('/');
