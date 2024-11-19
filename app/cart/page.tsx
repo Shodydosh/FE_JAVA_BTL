@@ -149,7 +149,8 @@ const CartPage: React.FC = () => {
                 totalAmount: calcTotalPrice,
                 phoneNumber: values.phone,
                 shippingAddress: values.address,
-                customerName: values.fullName
+                customerName: values.fullName,
+                note: values.note // Thêm note vào đây
             };
 
             localStorage.setItem('pendingOrder', JSON.stringify(orderData));
