@@ -27,6 +27,19 @@ interface PaymentFormData {
     note?: string;
 }
 
+interface OrderData {
+    items: Array<{
+        productId: string;
+        quantity: number;
+        price: number;
+    }>;
+    totalAmount: number;
+    phoneNumber: string;
+    shippingAddress: string;
+    customerName: string;
+    note?: string;
+}
+
 const CartPage: React.FC = () => {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -127,24 +140,19 @@ const CartPage: React.FC = () => {
             setIsSubmitting(true);
             const values = await form.validateFields();
             
-            // Prepare order data
-            const orderData = {
-                ...values,
-                userId: 'a08f9e729dd84ea9b6606cb4dfabd97a',
-                phoneNumber: values.phone,
-                shippingAddress: values.address,
+            const orderData: OrderData = {
                 items: groupedCartItems.map(item => ({
-                    id: item.id,
+                    productId: item.id,
                     quantity: item.quantity,
+                    price: item.price
                 })),
                 totalAmount: calcTotalPrice,
-                totalQuantity: calcTotalQuantity,
+                phoneNumber: values.phone,
+                shippingAddress: values.address,
+                customerName: values.fullName
             };
 
-            // Store order data in localStorage for payment page
             localStorage.setItem('pendingOrder', JSON.stringify(orderData));
-            
-            // Redirect to payment page
             router.push('/payment');
             
         } catch (error) {

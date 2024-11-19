@@ -61,53 +61,65 @@ const PaymentPage = () => {
     const handleSubmit = async (values: any) => {
         try {
             setIsSubmitting(true);
-            
-            // Sửa lại cấu trúc dữ liệu orderItems
-            const orderItems = orderData.items.map((item: any) => ({
-                productId: item.productId, // Thay đổi từ product object sang productId
-                quantity: item.quantity,
-                price: item.price
-            }));
 
-            const finalOrderData = {
-                orderItems: orderItems,
+            // 1. First create the order without items
+            const orderPayload = {
                 totalAmount: orderData.totalAmount,
                 shippingAddress: orderData.shippingAddress,
                 phoneNumber: orderData.phoneNumber,
+                customerName: orderData.customerName,
+                note: orderData.note,
                 paymentMethod: values.paymentMethod,
                 cardNumber: values.paymentMethod === 'CARD' ? values.cardNumber : null,
-                cardHolder: values.paymentMethod === 'CARD' ? values.cardHolder : null
+                cardHolder: values.paymentMethod === 'CARD' ? values.cardHolder : null,
+                status: 'PENDING'
             };
 
-            // Gửi request tạo đơn hàng
-            const response = await fetch('http://localhost:8080/api/orders/create', {
+            const orderResponse = await fetch('http://localhost:8080/api/orders/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 credentials: 'include',
-                body: JSON.stringify(finalOrderData),
+                body: JSON.stringify(orderPayload),
             });
 
-            const responseData = await response.json();
+            const orderResponseData = await orderResponse.json();
 
-            if (!response.ok) {
-                // Log lỗi để debug
-                console.error('Đặt hàng thất bại:', responseData);
-                throw new Error(responseData.message || 'Đặt hàng thất bại');
+            if (!orderResponse.ok) {
+                throw new Error(orderResponseData.message || 'Failed to create order');
             }
 
-            // Replace sendOrderConfirmationEmail with sendOrderNotificationToAdmin
-            await sendOrderNotificationToAdmin({
-                ...finalOrderData,
-                orderId: responseData.orderId,
-                customerName: responseData.customerName
+            // 2. Then create order items with the order ID
+            const orderItemsPromises = orderData.items.map(async (item: any) => {
+                const orderItemPayload = {
+                    order: { id: orderResponseData.id },
+                    product: { id: item.productId },
+                    quantity: item.quantity,
+                    price: item.price
+                };
+
+                return fetch('http://localhost:8080/api/orderItems', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(orderItemPayload),
+                });
             });
 
-            // Xóa đơn hàng tạm thời
-            localStorage.removeItem('pendingOrder');
+            await Promise.all(orderItemsPromises);
 
-            // Hiển thị thông báo thành công
+            // 3. Send notification with complete order data
+            await sendOrderNotificationToAdmin({
+                ...orderPayload,
+                orderId: orderResponseData.id,
+                orderItems: orderData.items
+            });
+
+            // Clean up and redirect
+            localStorage.removeItem('pendingOrder');
             notification.success({
                 message: 'Đặt hàng thành công',
                 description: 'Cảm ơn bạn đã mua hàng! Email xác nhận đã được gửi.'
