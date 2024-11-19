@@ -66,16 +66,14 @@ const ProductPage = () => {
                     quantity: 1
                 }
             );
-            console.log('response:', response);
-            if (response.status === 200) {
+
+            if (response.data) {
                 setCart([...cart, product]);
                 message.success('Product added to cart');
-            } else {
-                message.error('Failed to add product to cart');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error adding product to cart:', error);
-            message.error('Error adding product to cart');
+            message.error(error.response?.data?.message || 'Error adding product to cart');
         }
     };
 
@@ -98,28 +96,10 @@ const ProductPage = () => {
             label: 'Ghi chú',
             children: (
                 <p className="text-gray-600">
-                    Bùng nổ hiệu năng, chiến game đỉnh cao Bộ xử lý Intel Core
-                    i9 12900H với cấu trúc 14 nhân và 20 luồng có thể xử lý đa
-                    nhiệm các công việc phức tạp hay chiến các tựa game nặng như
-                    Uncharted 4, God of War, Cyberpunk 2077,... một cách mượt
-                    mà. Card đồ họa NVIDIA GeForce RTX 3070Ti với 8 GB VRAM đảm
-                    bảo cho bạn trải nghiệm game tuyệt vời với hiệu suất xử lý
-                    đồ họa mạnh mẽ. Công nghệ NVIDIA Optimus và MUX Switch trên
-                    chiếc laptop RTX 30 series này giúp cải thiện hiệu suất và
-                    chất lượng đồ họa trong các game nhờ tối ưu hóa việc sử dụng
-                    GPU để đảm bảo laptop được chạy ở mức hiệu suất cao nhất,
-                    trải nghiệm chiến game ở setting cấu hình cao, đồ họa đã mắt
-                    sẽ là những gì game thủ được trải nghiệm với ROG Strix SCAR
-                    15. Với bộ nhớ RAM DDR5 32 GB kênh đôi và khả năng nâng cấp
-                    lên đến tối đa 64 GB, bạn có thể chạy nhiều ứng dụng cùng
-                    một lúc mà không gặp phải tình trạng chậm hoặc giật, đồng
-                    thời hỗ trợ bạn chiến game hay làm đồ họa nặng thêm nhanh và
-                    mượt mà hơn. Ổ đĩa SSD 1 TB hỗ trợ thêm 1 khe cắm SSD M.2
-                    PCIe có tốc độ đọc/ghi nhanh hơn so với ổ cứng HDD thông
-                    thường, giúp khởi động hệ thống, các tựa game, truy cập dữ
-                    liệu nhanh và mượt mà hơn và cung cấp đủ không gian để lưu
-                    trữ nhiều tệp tin, ứng dụng, game, phim ảnh và các dữ liệu
-                    quan trọng.
+                    Laptop gaming cao cấp với CPU Intel Core i9 12900H (14 nhân, 20 luồng), 
+                    GPU NVIDIA RTX 3070Ti 8GB, RAM 32GB DDR5 (nâng cấp tối đa 64GB), 
+                    SSD 1TB PCIe. Mạnh mẽ cho gaming và đồ họa, trang bị công nghệ 
+                    NVIDIA Optimus và MUX Switch tối ưu hiệu năng.
                 </p>
             ),
         },

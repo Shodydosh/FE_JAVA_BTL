@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import CartDetailItem from './_components/CartDetailItem';
-import { Button, Modal, Form, Input, notification } from 'antd';
+import { Button, Modal, Form, Input, notification, Spin } from 'antd';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import Head from 'next/head';
@@ -29,9 +29,9 @@ interface PaymentFormData {
 
 const CartPage: React.FC = () => {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
-    const [quantities, setQuantities] = useState<Map<string, number>>(new Map());
     const [isLoading, setIsLoading] = useState(true);
-    const [isModalOpen, setIsModalOpen] = useState(false); // Add modal state
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [form] = Form.useForm();
     const router = useRouter();
 
@@ -57,31 +57,22 @@ const CartPage: React.FC = () => {
         fetchCartItems();
     }, []);
 
-    // Initialize quantities when cart items are loaded
-    useEffect(() => {
-        const newQuantities = new Map();
-        cartItems.forEach(item => {
-            const key = `${item.name}-${item.price}`;
-            const currentQty = newQuantities.get(key) || 0;
-            newQuantities.set(key, currentQty + 1);
-        });
-        setQuantities(newQuantities);
-    }, [cartItems]);
-
     const groupedCartItems = useMemo(() => {
         const grouped = cartItems.reduce((acc, item) => {
-            const key = `${item.name}-${item.price}`;
+            const key = item.id;
             if (!acc[key]) {
                 acc[key] = {
                     ...item,
-                    quantity: quantities.get(key) || 1
+                    quantity: 1
                 };
+            } else {
+                acc[key].quantity += 1;
             }
             return acc;
         }, {} as Record<string, CartItem & { quantity: number }>);
         
         return Object.values(grouped);
-    }, [cartItems, quantities]);
+    }, [cartItems]);
 
     const calcTotalPrice = useMemo(() => {
         return groupedCartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
@@ -91,37 +82,29 @@ const CartPage: React.FC = () => {
         return groupedCartItems.reduce((total, item) => total + item.quantity, 0);
     }, [groupedCartItems]);
 
-    const isValidUUID = (uuid: string) => {
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-        return uuidRegex.test(uuid);
-    };
+   
 
     const removeHandler = async (id: string) => {
-        const filterCart = cartItems.filter((x) => x.id !== id);
-        setCartItems(filterCart);
-        
-        const itemToRemove = cartItems.find(x => x.id === id);
-        if (itemToRemove) {
-            const key = `${itemToRemove.name}-${itemToRemove.price}`;
-            const newQuantities = new Map(quantities);
-            newQuantities.delete(key);
-            setQuantities(newQuantities);
-        }
+        const filteredCart = cartItems.filter((x) => x.id !== id);
+        setCartItems(filteredCart);
     };
 
-    const handleQuantityChange = (item: CartItem, newQuantity: number) => {
-        const newCartItems = cartItems.map(cartItem => {
-            if (cartItem.id === item.id) {
-                return { ...cartItem, quantity: newQuantity };
+    const handleQuantityChange = (newQuantity: number, itemId: string) => {
+        setCartItems(prevItems => {
+            const targetItem = prevItems.find(item => item.id === itemId);
+            if (!targetItem) return prevItems;
+
+            // Remove all instances of this item
+            const filteredItems = prevItems.filter(item => item.id !== itemId);
+            
+            // Add back the correct number of instances
+            const newItems = [...filteredItems];
+            for (let i = 0; i < newQuantity; i++) {
+                newItems.push({ ...targetItem });
             }
-            return cartItem;
+            
+            return newItems;
         });
-        setCartItems(newCartItems);
-        
-        const key = `${item.name}-${item.price}`;
-        const newQuantities = new Map(quantities);
-        newQuantities.set(key, newQuantity);
-        setQuantities(newQuantities);
     };
 
     const checkoutHandler = () => {
@@ -130,16 +113,57 @@ const CartPage: React.FC = () => {
 
     const handleModalOk = async () => {
         try {
+            setIsSubmitting(true);
             const values = await form.validateFields();
-            // Here you would send the payment data to your backend
+            
+            // Prepare order data
+            const orderData = {
+                ...values,
+                userId: 'a08f9e729dd84ea9b6606cb4dfabd97a', // Default userId
+                phoneNumber: values.phone,
+                shippingAddress: values.address,
+                items: groupedCartItems.map(item => ({
+                    id: item.id,
+                    quantity: item.quantity,
+                })),
+                totalAmount: calcTotalPrice,
+                totalQuantity: calcTotalQuantity,
+            };
+
+            // Call API to submit order
+            const response = await fetch('http://localhost:8080/api/orders/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(orderData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Đặt hàng thất bại');
+            }
+
+            const createdOrder = await response.json();
+
             notification.success({
                 message: 'Đặt hàng thành công',
                 description: 'Cảm ơn bạn đã mua hàng!'
             });
+            setCartItems([]); // Clear cart
             setIsModalOpen(false);
             form.resetFields();
+            
+            // Redirect to order details page
+            router.push(`/orders/${createdOrder.id}`);
+            
         } catch (error) {
-            console.error('Validation failed:', error);
+            notification.error({
+                message: 'Lỗi',
+                description: error instanceof Error ? error.message : 'Đặt hàng thất bại'
+            });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -175,9 +199,9 @@ const CartPage: React.FC = () => {
                         {groupedCartItems.map((item) => (
                             <CartDetailItem
                                 key={item.id}
-                                cart={{ ...item }}
+                                cart={item}
                                 onRemove={removeHandler}
-                                onQuantityChange={(qty) => handleQuantityChange(item, qty)}
+                                onQuantityChange={(qty) => handleQuantityChange(qty, item.id)}
                             />
                         ))}
                     </div>
@@ -218,56 +242,85 @@ const CartPage: React.FC = () => {
                 okText="Đặt hàng"
                 cancelText="Hủy"
                 width={600}
+                confirmLoading={isSubmitting}
+                okButtonProps={{
+                    style: { 
+                        backgroundColor: '#4caf50',
+                        borderColor: '#4caf50'
+                    }
+                }}
             >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    className="mt-4"
-                >
-                    <Form.Item
-                        name="fullName"
-                        label="Họ và tên"
-                        rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
+                <Spin spinning={isSubmitting}>
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        className="mt-4"
                     >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        name="phone"
-                        label="Số điện thoại"
-                        rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        name="address"
-                        label="Địa chỉ"
-                        rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
-                    >
-                        <Input.TextArea rows={3} />
-                    </Form.Item>
-                    <Form.Item
-                        name="note"
-                        label="Ghi chú"
-                    >
-                        <Input.TextArea rows={2} />
-                    </Form.Item>
+                        <Form.Item
+                            name="fullName"
+                            label="Họ và tên"
+                            rules={[
+                                { required: true, message: 'Vui lòng nhập họ tên' },
+                                { min: 3, message: 'Họ tên phải có ít nhất 3 ký tự' }
+                            ]}
+                        >
+                            <Input placeholder="Nhập họ và tên" />
+                        </Form.Item>
+                        <Form.Item
+                            name="phone"
+                            label="Số điện thoại"
+                            rules={[
+                                { required: true, message: 'Vui lòng nhập số điện thoại' },
+                                { pattern: /^[0-9]{10}$/, message: 'Số điện thoại không hợp lệ' }
+                            ]}
+                        >
+                            <Input placeholder="Nhập số điện thoại" />
+                        </Form.Item>
+                        <Form.Item
+                            name="address"
+                            label="Địa chỉ"
+                            rules={[
+                                { required: true, message: 'Vui lòng nhập địa chỉ' },
+                                { min: 10, message: 'Địa chỉ phải có ít nhất 10 ký tự' }
+                            ]}
+                        >
+                            <Input.TextArea 
+                                rows={3} 
+                                placeholder="Nhập địa chỉ đầy đủ (số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố)"
+                            />
+                        </Form.Item>
+                        <Form.Item
+                            name="note"
+                            label="Ghi chú"
+                        >
+                            <Input.TextArea 
+                                rows={2} 
+                                placeholder="Ghi chú thêm về đơn hàng (không bắt buộc)"
+                            />
+                        </Form.Item>
 
-                    <div className="mt-4 border-t pt-4">
-                        <div className="flex justify-between">
-                            <span>Tổng số lượng:</span>
-                            <span>{calcTotalQuantity}</span>
+                        <div className="mt-4 border-t pt-4">
+                            <div className="flex justify-between text-base">
+                                <span className="font-medium">Thông tin đơn hàng:</span>
+                            </div>
+                            <div className="mt-2 space-y-2">
+                                <div className="flex justify-between">
+                                    <span>Tổng số lượng:</span>
+                                    <span className="font-medium">{calcTotalQuantity} sản phẩm</span>
+                                </div>
+                                <div className="flex justify-between border-t pt-2">
+                                    <span>Tổng tiền:</span>
+                                    <span className="text-lg font-bold text-red-500">
+                                        {new Intl.NumberFormat('vi-VN', {
+                                            style: 'currency',
+                                            currency: 'VND'
+                                        }).format(calcTotalPrice)}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <div className="mt-2 flex justify-between">
-                            <span>Tổng tiền:</span>
-                            <span className="text-lg font-bold text-red-500">
-                                {new Intl.NumberFormat('vi-VN', {
-                                    style: 'currency',
-                                    currency: 'VND'
-                                }).format(calcTotalPrice)}
-                            </span>
-                        </div>
-                    </div>
-                </Form>
+                    </Form>
+                </Spin>
             </Modal>
         </div>
         </>

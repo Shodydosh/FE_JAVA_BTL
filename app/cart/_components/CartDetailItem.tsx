@@ -1,10 +1,9 @@
 'use client';
 
+import { Button, Tooltip } from 'antd';
+import { DeleteOutlined, PlusOutlined, MinusOutlined } from '@ant-design/icons';
+
 import { useEffect, useRef, useState } from 'react';
-
-import { Button, InputNumber, Tooltip } from 'antd';
-
-import { DeleteOutlined } from '@ant-design/icons';
 
 import Image from 'next/image';
 
@@ -33,7 +32,7 @@ interface CartDetailItemProps {
         quantity: number;
     };
     onRemove: (id: string) => Promise<void>;
-    onQuantityChange: (qty: number) => void;
+    onQuantityChange: (qty: number, id: string) => void;
 }
 
 const CartDetailItem: React.FC<CartDetailItemProps> = ({
@@ -41,51 +40,22 @@ const CartDetailItem: React.FC<CartDetailItemProps> = ({
     onRemove,
     onQuantityChange,
 }) => {
-    const { id, name, newPrice, quantity: defaultQuantity = 1, image } = cart;
-
-    const [quantity, setQuantity] = useState<number>(defaultQuantity);
-
-    useEffect(() => {
-        onQuantityChange?.(quantity, id);
-    }, [quantity]);
-
-    const quantityIncreaseHandler = () => {
-        if (quantity >= MAX_QUANTITY) return;
-
-        setQuantity((prevValue) => prevValue + 1);
-    };
-
-    const quantityDecreaseHandler = () => {
-        if (quantity <= MIN_QUANTITY) return;
-
-        setQuantity((prevValue) => prevValue - 1);
-    };
-
-    const handleRemove = async () => {
-        const apiUrl = `http://localhost:8080/api/cartitems/delete/59cd9ce2-1b15-4fe9-a775-9169fc90c907/${cart.id}`;
-
-        try {
-            const response = await axios.delete(apiUrl, {
-                withCredentials: true,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (response.status === 200) {
-                await onRemove(cart.id);
-                console.log('Cart item successfully deleted:', cart.id);
-            }
-        } catch (error) {
-            console.error('Error deleting item:', error);
-            // Add error handling UI feedback here if needed
+    const handleIncrement = () => {
+        if (cart.quantity < MAX_QUANTITY) {
+            const newQuantity = cart.quantity + 1;
+            onQuantityChange(newQuantity, cart.id);
         }
     };
 
-    const handleQuantityChange = (value: number | null) => {
-        if (value !== null) {
-            onQuantityChange(value);
+    const handleDecrement = () => {
+        if (cart.quantity > MIN_QUANTITY) {
+            const newQuantity = cart.quantity - 1;
+            onQuantityChange(newQuantity, cart.id);
         }
+    };
+
+    const handleRemove = () => {
+        onRemove(cart.id);
     };
 
     return (
@@ -108,14 +78,23 @@ const CartDetailItem: React.FC<CartDetailItemProps> = ({
                     }).format(cart.price)}
                 </div>
                 <div className="flex items-center gap-2">
-                    <InputNumber
-                        min={1}
-                        max={10}
-                        value={cart.quantity}
-                        onChange={handleQuantityChange}
-                        size="small"
-                        className="w-20"
-                    />
+                    <div className="flex items-center border rounded">
+                        <Button 
+                            type="text" 
+                            size="small"
+                            icon={<MinusOutlined />}
+                            onClick={handleDecrement}
+                            disabled={cart.quantity <= MIN_QUANTITY}
+                        />
+                        <span className="px-2 min-w-[40px] text-center">{cart.quantity}</span>
+                        <Button 
+                            type="text" 
+                            size="small"
+                            icon={<PlusOutlined />}
+                            onClick={handleIncrement}
+                            disabled={cart.quantity >= MAX_QUANTITY}
+                        />
+                    </div>
                     <Button
                         type="text"
                         size="small"
