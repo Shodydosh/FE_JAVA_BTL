@@ -35,7 +35,7 @@ const FooterView = () => {
                     </span>
                     <span style={{ marginTop: '12px', fontWeight: '500' }}>
                         <MailOutlined style={{ marginRight: '6px' }} />
-                        dungvaoptit@gmail.com
+                        ptitstore@gmail.com
                     </span>
                 </div>
                 <div
@@ -102,27 +102,41 @@ const FooterView = () => {
                             display: 'flex',
                             flexDirection: 'row',
                             marginTop: '6px',
+                            alignItems: 'center',
+                            gap: '8px'
                         }}
                     >
                         <Image
                             src={ghn}
                             alt="My Image"
-                            className="w-20 h-12 mr-2 rounded"
+                            width={80}
+                            height={48}
+                            style={{ objectFit: 'contain' }}
+                            className="rounded"
                         />
                         <Image
                             src={ghtk}
                             alt="My Image"
-                            className="w-20 h-12 mr-2 rounded"
+                            width={80}
+                            height={48}
+                            style={{ objectFit: 'contain' }}
+                            className="rounded"
                         />
                         <Image
                             src={ems}
                             alt="My Image"
-                            className="w-20 h-12 mr-2 rounded"
+                            width={80}
+                            height={48}
+                            style={{ objectFit: 'contain' }}
+                            className="rounded"
                         />
                         <Image
                             src={jandt}
                             alt="My Image"
-                            className="w-20 h-12 mr-2 rounded"
+                            width={80}
+                            height={48}
+                            style={{ objectFit: 'contain' }}
+                            className="rounded"
                         />
                     </div>
                     <Text

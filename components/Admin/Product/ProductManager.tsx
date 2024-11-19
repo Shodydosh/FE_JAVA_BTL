@@ -18,35 +18,35 @@ const ProductManager: React.FC<ProductManagerProps> = ({ productsData }) => {
     });
     const columns: ColumnsType<ProductProps> = [
         {
-            title: 'Image',
+            title: 'Hình ảnh',
             dataIndex: 'img_url',
             render: (img_url: string | null) => (
                 <Image
                     //@ts-ignore
                     src={img_url}
-                    alt="Product"
+                    alt="Sản phẩm"
                     width={100}
                     height={100}
                     unoptimized={true}
                 />
             ),
         },
-        { title: 'ProductId', dataIndex: 'id', key: 'id' },
-        { title: 'Name', dataIndex: 'name', key: 'name' },
+        { title: 'Mã sản phẩm', dataIndex: 'id', key: 'id' },
+        { title: 'Tên sản phẩm', dataIndex: 'name', key: 'name' },
         {
-            title: 'Category',
+            title: 'Danh mục',
             dataIndex: 'category',
             filters: [
                 {
-                    text: 'tablet',
+                    text: 'Máy tính bảng',
                     value: 'tablet',
                 },
                 {
-                    text: 'laptop',
+                    text: 'Laptop',
                     value: 'laptop',
                 },
                 {
-                    text: 'phone',
+                    text: 'Điện thoại',
                     value: 'phone',
                 },
             ],
@@ -55,32 +55,22 @@ const ProductManager: React.FC<ProductManagerProps> = ({ productsData }) => {
             filterSearch: true,
             render: (category: string | null) =>
                 category === 'tablet' ? (
-                    <Tag color="pink">tablet</Tag>
-                ) : category === 'phone' ? (
-                    <Tag color="purple">phone</Tag>
+                    <Tag color="pink">Máy tính bảng</Tag>
+                ) : category === 'mobile' ? (
+                    <Tag color="purple">Điện thoại</Tag>
                 ) : (
-                    <Tag color="orange">laptop</Tag>
+                    <Tag color="orange">Laptop</Tag>
                 ),
         },
         {
-            title: 'Price',
+            title: 'Giá',
             dataIndex: 'price',
-            // @ts-ignore
             sorter: (a: ProductProps, b: ProductProps) => {
-                return a.price > b.price;
+                return parseInt(a.price) - parseInt(b.price);
             },
         },
-        // {
-        //     title: 'lastModifiedDate',
-        //     dataIndex: 'lastModifiedDate',
-        // sorter: (a: ProductProps, b: ProductProps) => {
-        //     if(!a.modifiedDate) return -1
-        //     if(!b.modifiedDate) return 1
-        //     return a.modifiedDate.localeCompare(b.modifiedDate)
-        // },
-        // },
         {
-            title: 'Action',
+            title: 'Thao tác',
             key: 'action',
             render: (prod: ProductProps) => (
                 <div>
@@ -92,7 +82,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ productsData }) => {
     ];
 
     const handleDelete = (ProductId: string) => {
-        console.log('DELETE Product W ID: ', ProductId);
+        console.log('Xóa sản phẩm có ID: ', ProductId);
     };
 
     const onChange: TableProps<ProductProps>['onChange'] = (

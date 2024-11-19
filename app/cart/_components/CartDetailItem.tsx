@@ -2,7 +2,7 @@
 
 import { Button, Tooltip } from 'antd';
 import { DeleteOutlined, PlusOutlined, MinusOutlined } from '@ant-design/icons';
-
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 import Image from 'next/image';
@@ -68,9 +68,12 @@ const CartDetailItem: React.FC<CartDetailItemProps> = ({
                 />
             </div>
             <div className="ml-3 flex flex-1 flex-col gap-1">
-                <div className="line-clamp-2 text-sm font-medium">
+                <Link 
+                    href={`/product/${cart.id}`} 
+                    className="line-clamp-2 text-sm font-medium"
+                >
                     {cart.name}
-                </div>
+                </Link>
                 <div className="text-sm text-red-500">
                     {new Intl.NumberFormat('vi-VN', {
                         style: 'currency',

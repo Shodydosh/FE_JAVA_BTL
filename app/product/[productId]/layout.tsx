@@ -19,7 +19,6 @@ export default function HomeLayout({ children }: { children: ReactNode }) {
             >
                 {children}
             </Content>
-            <Footer />
         </Layout>
     );
 }

@@ -8,6 +8,21 @@ import { useRouter } from 'next/navigation';
 const { Text, Link, Title } = Typography;
 const { Meta } = Card;
 
+const formatPrice = (price: string | number): string => {
+    if (!price) return '0 ₫';
+    
+    // Convert price to string if it's a number
+    const priceString = typeof price === 'number' ? price.toString() : price;
+    
+    // Remove all non-numeric characters except dots and commas
+    const cleanPrice = priceString.replace(/[^\d.,]/g, '');
+    // Convert to number, handling different number formats
+    const numericPrice = parseFloat(cleanPrice.replace(/,/g, ''));
+    
+    // Format the price with Vietnamese locale
+    return numericPrice.toLocaleString('vi-VN') + ' ₫';
+};
+
 interface ProductCardProps {
     data: {
         id: string;
@@ -32,36 +47,37 @@ const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
 
     return (
         <div
-            className="min-h-128 w-full rounded shadow-lg hover:cursor-pointer"
+            className="min-h-96 w-full rounded shadow-lg hover:cursor-pointer"
             onClick={handleClick}
         >
-            <div className="w-full bg-white p-4">
-                <div className="h-72 w-full">
+            <div className="w-full bg-white p-2">
+                <div className="h-48 w-full">
                     <Image
                         src={data.img_url}
                         alt="Product"
-                        width={400}
-                        height={400}
+                        width={200}
+                        height={200}
                         unoptimized={true}
+                        className="object-contain"
                     />
                 </div>
-                <div className="mt-4 h-full flex-row">
-                    <h1 className="h-24 text-lg font-semibold text-black">
+                <div className="mt-2 h-full flex-row">
+                    <h1 className="h-16 text-base font-semibold text-black line-clamp-2">
                         {data.name}
                     </h1>
-                    <div className="mt-2">
-                        <p className="text-sm text-gray-500 line-through">
+                    <div className="mt-1">
+                        <p className="text-xs text-gray-500 line-through">
                             Old Price
                         </p>
-                        <p className="text-sm text-gray-500">info</p>
+                        <p className="text-xs text-gray-500">info</p>
                     </div>
-                    <div className="mt-2">
-                        <h3 className="text-2xl text-blue-400">{data.price}</h3>
+                    <div className="mt-1">
+                        <h3 className="text-xl text-blue-400">{formatPrice(data.price)}</h3>
                     </div>
                 </div>
-                <div className="mt-4 flex">
+                <div className="mt-2 flex">
                     <ShoppingCartOutlined
-                        className="text-2xl text-gray-600"
+                        className="text-xl text-gray-600"
                         key="add to cart"
                     />
                 </div>

@@ -85,8 +85,19 @@ const CartPage: React.FC = () => {
    
 
     const removeHandler = async (id: string) => {
-        const filteredCart = cartItems.filter((x) => x.id !== id);
-        setCartItems(filteredCart);
+        try {
+            const response = await fetch(`http://localhost:8080/api/cartitems/delete/59cd9ce2-1b15-4fe9-a775-9169fc90c907/${id}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                throw new Error('Failed to delete cart item');
+            }
+            const filteredCart = cartItems.filter((x) => x.id !== id);
+            setCartItems(filteredCart);
+        } catch (error) {
+            console.error('Error deleting cart item:', error);
+        }
     };
 
     const handleQuantityChange = (newQuantity: number, itemId: string) => {
@@ -119,7 +130,7 @@ const CartPage: React.FC = () => {
             // Prepare order data
             const orderData = {
                 ...values,
-                userId: 'a08f9e729dd84ea9b6606cb4dfabd97a', // Default userId
+                userId: 'a08f9e729dd84ea9b6606cb4dfabd97a',
                 phoneNumber: values.phone,
                 shippingAddress: values.address,
                 items: groupedCartItems.map(item => ({
@@ -130,37 +141,16 @@ const CartPage: React.FC = () => {
                 totalQuantity: calcTotalQuantity,
             };
 
-            // Call API to submit order
-            const response = await fetch('http://localhost:8080/api/orders/create', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify(orderData),
-            });
-
-            if (!response.ok) {
-                throw new Error('Đặt hàng thất bại');
-            }
-
-            const createdOrder = await response.json();
-
-            notification.success({
-                message: 'Đặt hàng thành công',
-                description: 'Cảm ơn bạn đã mua hàng!'
-            });
-            setCartItems([]); // Clear cart
-            setIsModalOpen(false);
-            form.resetFields();
+            // Store order data in localStorage for payment page
+            localStorage.setItem('pendingOrder', JSON.stringify(orderData));
             
-            // Redirect to order details page
-            router.push(`/orders/${createdOrder.id}`);
+            // Redirect to payment page
+            router.push('/payment');
             
         } catch (error) {
             notification.error({
                 message: 'Lỗi',
-                description: error instanceof Error ? error.message : 'Đặt hàng thất bại'
+                description: error instanceof Error ? error.message : 'Có lỗi xảy ra'
             });
         } finally {
             setIsSubmitting(false);
@@ -172,74 +162,127 @@ const CartPage: React.FC = () => {
     };
 
     if (isLoading) {
-        return <div className="p-10">Đang tải giỏ hàng...</div>;
+        return (
+            <>
+                <Header />
+                <div className="min-h-screen bg-gray-50 py-8">
+                    <div className="mx-auto max-w-7xl px-4">
+                        <div className="flex items-center justify-center">
+                            <Spin size="large" />
+                        </div>
+                    </div>
+                </div>
+            </>
+        );
     }
 
     if (!cartItems.length) {
         return (
-            <div className="p-10">
-                Không tìm thấy sản phẩm nào trong giỏ hàng
-            </div>
+            <>
+                <Header />
+                <div className="min-h-screen bg-gray-50 py-8">
+                    <div className="mx-auto max-w-7xl px-4">
+                        <div className="rounded-lg bg-white p-8 text-center shadow">
+                            <h2 className="mb-4 text-2xl font-semibold text-gray-800">Giỏ hàng trống</h2>
+                            <p className="mb-6 text-gray-600">Hãy thêm sản phẩm vào giỏ hàng của bạn</p>
+                            <Button 
+                                size="large"
+                                type="primary"
+                                onClick={() => router.push('/')}
+                            >
+                                Tiếp tục mua sắm
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </>
         );
     }
 
     return (
         <>
-        <Header />
-        <div className="mx-auto max-w-6xl px-4">
-            <div className="mt-4 flex justify-center border-b text-[18px]">
-                <span className="mb-2 font-semibold" style={{ color: '#1890ff' }}>
-                    Giỏ hàng của bạn
-                </span>
-            </div>
-
-            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div className="md:col-span-2">
-                    <div className="rounded-md border bg-white shadow">
-                        {groupedCartItems.map((item) => (
-                            <CartDetailItem
-                                key={item.id}
-                                cart={item}
-                                onRemove={removeHandler}
-                                onQuantityChange={(qty) => handleQuantityChange(qty, item.id)}
-                            />
-                        ))}
-                    </div>
-                </div>
-
-                <div className="sticky top-4 h-fit rounded-md border bg-white p-4 shadow">
-                    <h3 className="mb-4 text-lg font-semibold">Tổng đơn hàng</h3>
-                    <div className="space-y-2">
-                        <div className="flex justify-between">
-                            <span>Số lượng:</span>
-                            <span>{calcTotalQuantity}</span>
-                        </div>
-                        <div className="flex justify-between border-t pt-2">
-                            <span>Tổng tiền:</span>
-                            <span className="text-lg font-bold text-red-500">
-                                {new Intl.NumberFormat('vi-VN', {
-                                    style: 'currency',
-                                    currency: 'VND'
-                                }).format(calcTotalPrice)}
-                            </span>
+            <Header />
+            <div className="min-h-screen bg-gray-50 py-8">
+                <div className="mx-auto max-w-7xl px-4">
+                    {/* Breadcrumb */}
+                    <div className="mb-6">
+                        <h1 className="text-2xl font-bold text-gray-900">Giỏ hàng</h1>
+                        <div className="mt-2 text-sm text-gray-500">
+                            Trang chủ / Giỏ hàng
                         </div>
                     </div>
-                    <Button 
-                        size="large" 
-                        className="mt-4 w-full bg-blue-500 text-white hover:!bg-green-500 hover:!text-white"
-                        onClick={checkoutHandler}
-                    >
-                        Thanh toán
-                    </Button>
+
+                    <div className="lg:grid lg:grid-cols-12 lg:gap-x-12">
+                        {/* Cart Items */}
+                        <div className="lg:col-span-8">
+                            <div className="rounded-lg bg-white shadow">
+                                <div className="p-6">
+                                    <h2 className="mb-4 text-lg font-medium text-gray-900">
+                                        Sản phẩm ({calcTotalQuantity})
+                                    </h2>
+                                    <div className="divide-y divide-gray-200">
+                                        {groupedCartItems.map((item) => (
+                                            <CartDetailItem
+                                                key={item.id}
+                                                cart={item}
+                                                onRemove={removeHandler}
+                                                onQuantityChange={(qty) => handleQuantityChange(qty, item.id)}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Order Summary */}
+                        <div className="mt-6 lg:col-span-4 lg:mt-0">
+                            <div className="sticky top-4">
+                                <div className="rounded-lg bg-white shadow">
+                                    <div className="p-6">
+                                        <h2 className="text-lg font-medium text-gray-900">
+                                            Thông tin đơn hàng
+                                        </h2>
+                                        <div className="mt-6 space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-sm text-gray-600">Tạm tính</p>
+                                                <p className="text-base font-medium text-gray-900">
+                                                    {new Intl.NumberFormat('vi-VN', {
+                                                        style: 'currency',
+                                                        currency: 'VND'
+                                                    }).format(calcTotalPrice)}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+                                                <p className="text-base font-medium text-gray-900">Tổng tiền</p>
+                                                <p className="text-xl font-semibold text-red-600">
+                                                    {new Intl.NumberFormat('vi-VN', {
+                                                        style: 'currency',
+                                                        currency: 'VND'
+                                                    }).format(calcTotalPrice)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            size="large"
+                                            className="mt-6 w-full bg-blue-600 text-white hover:bg-blue-700"
+                                            onClick={checkoutHandler}
+                                        >
+                                            Tiến hành thanh toán
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <Modal 
-                title="Thông tin thanh toán" 
+                title="Thông tin giao hàng" 
                 open={isModalOpen} 
                 onOk={handleModalOk}
                 onCancel={handleModalCancel}
-                okText="Đặt hàng"
+                okText="Tiếp tục thanh toán"
                 cancelText="Hủy"
                 width={600}
                 confirmLoading={isSubmitting}
@@ -251,11 +294,47 @@ const CartPage: React.FC = () => {
                 }}
             >
                 <Spin spinning={isSubmitting}>
+                    <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-4">Danh sách sản phẩm</h3>
+                        <div className="max-h-48 overflow-auto">
+                            {groupedCartItems.map(item => (
+                                <div key={item.id} className="flex items-center gap-4 py-2 border-b">
+                                    <img 
+                                        src={item.img_url} 
+                                        alt={item.name} 
+                                        className="w-16 h-16 object-cover rounded"
+                                    />
+                                    <div className="flex-1">
+                                        <h4 className="font-medium">{item.name}</h4>
+                                        <div className="text-sm text-gray-500">
+                                            Số lượng: {item.quantity}
+                                        </div>
+                                        <div className="text-sm font-semibold text-blue-600">
+                                            {new Intl.NumberFormat('vi-VN', {
+                                                style: 'currency',
+                                                currency: 'VND'
+                                            }).format(item.price * item.quantity)}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-4 text-right">
+                            <span className="text-lg font-bold text-red-600">
+                                Tổng: {new Intl.NumberFormat('vi-VN', {
+                                    style: 'currency',
+                                    currency: 'VND'
+                                }).format(calcTotalPrice)}
+                            </span>
+                        </div>
+                    </div>
+                    
                     <Form
                         form={form}
                         layout="vertical"
                         className="mt-4"
                     >
+                        <h3 className="text-lg font-semibold mb-4">Thông tin giao hàng</h3>
                         <Form.Item
                             name="fullName"
                             label="Họ và tên"
@@ -298,31 +377,9 @@ const CartPage: React.FC = () => {
                                 placeholder="Ghi chú thêm về đơn hàng (không bắt buộc)"
                             />
                         </Form.Item>
-
-                        <div className="mt-4 border-t pt-4">
-                            <div className="flex justify-between text-base">
-                                <span className="font-medium">Thông tin đơn hàng:</span>
-                            </div>
-                            <div className="mt-2 space-y-2">
-                                <div className="flex justify-between">
-                                    <span>Tổng số lượng:</span>
-                                    <span className="font-medium">{calcTotalQuantity} sản phẩm</span>
-                                </div>
-                                <div className="flex justify-between border-t pt-2">
-                                    <span>Tổng tiền:</span>
-                                    <span className="text-lg font-bold text-red-500">
-                                        {new Intl.NumberFormat('vi-VN', {
-                                            style: 'currency',
-                                            currency: 'VND'
-                                        }).format(calcTotalPrice)}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
                     </Form>
                 </Spin>
             </Modal>
-        </div>
         </>
     );
 };

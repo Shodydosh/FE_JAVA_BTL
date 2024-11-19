@@ -69,11 +69,11 @@ const ProductPage = () => {
 
             if (response.data) {
                 setCart([...cart, product]);
-                message.success('Product added to cart');
+                message.success('Đã thêm sản phẩm vào giỏ hàng');
             }
         } catch (error: any) {
-            console.error('Error adding product to cart:', error);
-            message.error(error.response?.data?.message || 'Error adding product to cart');
+            console.error('Lỗi khi thêm vào giỏ hàng:', error);
+            message.error(error.response?.data?.message || 'Lỗi khi thêm sản phẩm vào giỏ hàng');
         }
     };
 
@@ -88,12 +88,12 @@ const ProductPage = () => {
         {
             key: 'price',
             label: 'Giá tiền',
-            children: `$${productData.price}`,
+            children: productData.price ? `${productData.price.toLocaleString('vi-VN')} ₫` : '',
             span: 3,
         },
         {
             key: 'description',
-            label: 'Ghi chú',
+            label: 'Mô tả',
             children: (
                 <p className="text-gray-600">
                     Laptop gaming cao cấp với CPU Intel Core i9 12900H (14 nhân, 20 luồng), 
@@ -111,7 +111,7 @@ const ProductPage = () => {
                 <div className="flex-shrink-0">
                     <Image
                         src={productData.img_url}
-                        alt="Product Image"
+                        alt="Hình ảnh sản phẩm"
                         className="rounded-lg object-cover"
                         width={400}
                         height={400}
@@ -131,7 +131,7 @@ const ProductPage = () => {
                             size="large"
                             onClick={() => addToCart(productData)}
                         >
-                            Thêm vào giỏ
+                            Thêm vào giỏ hàng
                         </Button>
                         <Button type="link" className="text-blue-500">
                             Gọi đặt mua 1800.1060 (7:30 - 22:00)

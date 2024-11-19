@@ -83,8 +83,7 @@ const App: React.FC = () => {
             <Layout>
                 <Layout style={{ padding: '0 24px 24px' }}>
                     <Content className="min-h-screen w-full">
-                        <Banner />
-                        <ProductList productData={product} />
+                        <ProductList className="small-product-cards" productData={product} />
                     </Content>
                 </Layout>
             </Layout>
