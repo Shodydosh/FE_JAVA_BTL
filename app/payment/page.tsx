@@ -6,11 +6,13 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/Core/Header';
 
 const PaymentPage = () => {
+    // Khởi tạo các hooks cần thiết
     const [form] = Form.useForm();
     const router = useRouter();
     const [orderData, setOrderData] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Lấy dữ liệu đơn hàng từ localStorage khi component mount
     useEffect(() => {
         const savedOrder = localStorage.getItem('pendingOrder');
         if (!savedOrder) {
@@ -20,13 +22,14 @@ const PaymentPage = () => {
         setOrderData(JSON.parse(savedOrder));
     }, [router]);
 
+    // Xử lý submit form thanh toán
     const handleSubmit = async (values: any) => {
         try {
             setIsSubmitting(true);
             
-            // Structure the order data properly
+            // Sửa lại cấu trúc dữ liệu orderItems
             const orderItems = orderData.items.map((item: any) => ({
-                product: { id: item.productId },
+                productId: item.productId, // Thay đổi từ product object sang productId
                 quantity: item.quantity,
                 price: item.price
             }));
@@ -41,6 +44,7 @@ const PaymentPage = () => {
                 cardHolder: values.paymentMethod === 'CARD' ? values.cardHolder : null
             };
 
+            // Gửi request tạo đơn hàng
             const response = await fetch('http://localhost:8080/api/orders/create', {
                 method: 'POST',
                 headers: {
@@ -50,13 +54,18 @@ const PaymentPage = () => {
                 body: JSON.stringify(finalOrderData),
             });
 
+            const responseData = await response.json();
+
             if (!response.ok) {
-                throw new Error('Đặt hàng thất bại');
+                // Log lỗi để debug
+                console.error('Đặt hàng thất bại:', responseData);
+                throw new Error(responseData.message || 'Đặt hàng thất bại');
             }
 
-            // Clear pending order
+            // Xóa đơn hàng tạm thời
             localStorage.removeItem('pendingOrder');
 
+            // Hiển thị thông báo thành công
             notification.success({
                 message: 'Đặt hàng thành công',
                 description: 'Cảm ơn bạn đã mua hàng!'
@@ -64,19 +73,24 @@ const PaymentPage = () => {
 
             router.push('/');
         } catch (error) {
+            console.error('Error details:', error);
             notification.error({
-                message: 'Lỗi',
-                description: error instanceof Error ? error.message : 'Đặt hàng thất bại'
+                message: 'Lỗi đặt hàng',
+                description: error instanceof Error ? 
+                    error.message : 
+                    'Có lỗi xảy ra trong quá trình đặt hàng. Vui lòng thử lại sau.'
             });
         } finally {
             setIsSubmitting(false);
         }
     };
 
+    // Hiển thị loading khi chưa có dữ liệu
     if (!orderData) {
         return <Spin />;
     }
 
+    // Render giao diện thanh toán
     return (
         <>
             <Header />
@@ -107,6 +121,7 @@ const PaymentPage = () => {
                                 </Radio.Group>
                             </Form.Item>
 
+                            {/* Form fields cho thanh toán bằng thẻ */}
                             <Form.Item
                                 noStyle
                                 shouldUpdate={(prevValues, currentValues) => 
@@ -135,6 +150,7 @@ const PaymentPage = () => {
                                 }
                             </Form.Item>
 
+                            {/* Hiển thị tổng tiền và nút đặt hàng */}
                             <div className="mt-6 border-t pt-6">
                                 <div className="flex justify-between mb-2">
                                     <span>Tổng tiền hàng:</span>
