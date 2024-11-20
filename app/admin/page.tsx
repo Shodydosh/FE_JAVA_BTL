@@ -14,6 +14,38 @@ import AddProductButton from '../../components/Admin/Product/AddProductButton';
 import OrderManager from '../../components/Admin/Order/OrderManager';
 import StatisticsManager from '../../components/Admin/Statistics/StatisticsManager';
 
+interface Order {
+  id: string;
+  user: {
+    id: string;
+  };
+  orderItems: OrderItem[];
+  totalAmount: number;
+  shippingAddress: string;
+  phoneNumber: string;
+  customerName: string;
+  note: string;
+  paymentMethod: string;
+  cardNumber?: string;
+  cardHolder?: string;
+  status: string;
+  createdAt: string;
+}
+
+interface OrderItem {
+  id: string;
+  order: Order;
+  product: {
+    id: string;
+    name: string;
+    price: number;
+    img_url: string;
+    retailer: string;
+  };
+  quantity: number;
+  price: number;
+}
+
 function getItem(
     label: React.ReactNode,
     key?: React.Key | null, 
@@ -214,6 +246,46 @@ const AdminPage = () => {
     } catch (error) {
       console.error('Error deleting order:', error);
       // You might want to add error handling UI here
+    }
+  };
+
+  const fetchOrderItems = async (orderId: string) => {
+    setLoading(true);
+    try {
+      const order = ordersData.find(o => o.id === orderId);
+      setSelectedOrder(order || null);
+      
+      // Use order's existing orderItems instead of making new request
+      if (order && order.orderItems) {
+        setSelectedOrderItems(order.orderItems);
+        setIsModalVisible(true);
+      }
+    } catch (error) {
+      console.error('Error setting order items:', error);
+    }
+    setLoading(false);
+  };
+
+  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/orders/${orderId}/status?status=${newStatus}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to update order status');
+      }
+  
+      const updatedOrder = await response.json();
+      const updatedOrders = ordersData.map(order => 
+        order.id === orderId ? updatedOrder : order
+      );
+      setOrdersData(updatedOrders);
+    } catch (error) {
+      console.error('Error updating order status:', error);
     }
   };
   
