@@ -73,9 +73,9 @@ const CartPage: React.FC = () => {
     useEffect(() => {
         const fetchCart = async () => {
             try {
-                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-                const userId = userData.id;
-                if (!userId) {
+                // Kiểm tra token trước
+                const token = localStorage.getItem('token');
+                if (!token) {
                     notification.error({
                         message: 'Chưa đăng nhập',
                         description: 'Vui lòng đăng nhập để xem giỏ hàng',
@@ -84,8 +84,36 @@ const CartPage: React.FC = () => {
                     return;
                 }
 
-                const cartId = await getCartId(userId);
-                console.log('cartId: ', cartId);
+                // Lấy userData sau khi đã verify token
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                if (!userData.id) {
+                    // Nếu không có userData nhưng có token, thử fetch lại thông tin user
+                    try {
+                        const userResponse = await fetch('http://localhost:8080/api/user/profile', {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            },
+                            credentials: 'include'
+                        });
+                        if (userResponse.ok) {
+                            const userData = await userResponse.json();
+                            localStorage.setItem('userData', JSON.stringify(userData));
+                        } else {
+                            // Nếu không lấy được thông tin user, xóa token và redirect
+                            localStorage.removeItem('token');
+                            router.push('/login');
+                            return;
+                        }
+                    } catch (error) {
+                        console.error('Error fetching user data:', error);
+                        router.push('/login');
+                        return;
+                    }
+                }
+
+                // Tiếp tục với logic fetching cart như cũ
+                const cartId = await getCartId(userData.id);
+                localStorage.setItem('cartId', cartId);
                 if (!cartId) {
                     setIsLoading(false);
                     return;

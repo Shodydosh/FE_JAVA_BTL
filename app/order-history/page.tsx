@@ -71,7 +71,13 @@ const OrderHistory = () => {
     const fetchOrders = async () => {
         setLoading(true);
         try {
-            const userId = 'a08f9e72-9dd8-4ea9-b660-6cb4dfabd97a';
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            const userId = userData.id;
+        
+            if (!userId) {
+                message.error('Vui lòng đăng nhập để xem lịch sử đơn hàng');
+                return;
+            }
             const response = await fetch(`http://localhost:8080/api/orders/user/${userId}`);
             if (response.ok) {
                 const data = await response.json();

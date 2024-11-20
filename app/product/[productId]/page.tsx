@@ -103,11 +103,35 @@ const ProductPage = () => {
 
         fetchData();
     }, [params]);
-
+const getCartId = async (userId: string) => {
+    try {
+        const response = await fetch(
+            `http://localhost:8080/api/cart/user/${userId}`,
+            {
+                credentials: 'include',
+            },
+        );
+        if (!response.ok) {
+            throw new Error('Failed to fetch cart');
+        }
+        const cartData = await response.json();
+        console.log('cartData: ', cartData);
+        // cartData is now a Cart object with id property
+        return cartData.id;
+    } catch (error) {
+        console.error('Error fetching cart:', error);
+        return null;
+    }
+};
     const addToCart = async (product) => {
         try {
+            const userData = JSON.parse(
+                localStorage.getItem('userData') || '{}',
+            );
+            const userId = userData.id;
+            const cartId = await getCartId(userId);
             const response = await axios.post(
-                `http://localhost:8080/api/cartitems/add/59cd9ce2-1b15-4fe9-a775-9169fc90c907`,
+                `http://localhost:8080/api/cartitems/add/${cartId}`,
                 {
                     product: {
                         id: product.id,
@@ -141,7 +165,10 @@ const ProductPage = () => {
     }) => {
         try {
             // Hardcoded userId for testing - replace with actual user authentication
-            const userId = '59cd9ce2-1b15-4fe9-a775-9169fc90c907'; // Same as the cart user ID
+            const userData = JSON.parse(
+                localStorage.getItem('userData') || '{}',
+            );
+            const userId = userData.id;
 
             const ratingSubmission: RatingSubmission = {
                 rating: values.rating, // Changed from score to rating
