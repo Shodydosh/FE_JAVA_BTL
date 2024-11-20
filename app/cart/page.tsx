@@ -61,6 +61,8 @@ const CartPage: React.FC = () => {
                 throw new Error('Failed to fetch cart');
             }
             const cartData = await response.json();
+            console.log('cartData: ', cartData);
+            // cartData is now a Cart object with id property
             return cartData.id;
         } catch (error) {
             console.error('Error fetching cart:', error);
@@ -83,12 +85,16 @@ const CartPage: React.FC = () => {
                 }
 
                 const cartId = await getCartId(userId);
-                if (!cartId) return;
+                console.log('cartId: ', cartId);
+                if (!cartId) {
+                    setIsLoading(false);
+                    return;
+                }
                 
                 setCartId(cartId);
 
                 const response = await fetch(
-                    `http://localhost:8080/api/cartitems/cart/${cartId}`,
+                    `http://localhost:8080/api/cartitems/${cartId}`,
                     {
                         credentials: 'include',
                     }
@@ -97,9 +103,13 @@ const CartPage: React.FC = () => {
                     throw new Error('Failed to fetch cart items');
                 }
                 const data = await response.json();
-                setCartItems(Array.isArray(data) ? data : [data]);
+                setCartItems(Array.isArray(data) ? data : []);
             } catch (error) {
                 console.error('Error fetching cart data:', error);
+                notification.error({
+                    message: 'Lỗi',
+                    description: 'Không thể tải thông tin giỏ hàng'
+                });
             } finally {
                 setIsLoading(false);
             }
