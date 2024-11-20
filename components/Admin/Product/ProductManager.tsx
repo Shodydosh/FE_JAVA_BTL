@@ -31,8 +31,23 @@ const ProductManager: React.FC<ProductManagerProps> = ({ productsData }) => {
                 />
             ),
         },
-        { title: 'Mã sản phẩm', dataIndex: 'id', key: 'id' },
-        { title: 'Tên sản phẩm', dataIndex: 'name', key: 'name' },
+        {
+            title: 'Mã sản phẩm',
+            dataIndex: 'id',
+            key: 'id',
+            sorter: (a: ProductProps, b: ProductProps) => a.id.localeCompare(b.id),
+        },
+        {
+            title: 'Tên sản phẩm',
+            dataIndex: 'name',
+            key: 'name',
+            sorter: (a: ProductProps, b: ProductProps) => a.name.localeCompare(b.name),
+            filterSearch: true,
+            filters: [
+                ...new Set(productsData.map(item => item.name))
+            ].map(name => ({ text: name, value: name })),
+            onFilter: (value: React.Key | boolean, record: ProductProps) => record.name === value,
+        },
         {
             title: 'Danh mục',
             dataIndex: 'category',
@@ -47,7 +62,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ productsData }) => {
                 },
                 {
                     text: 'Điện thoại',
-                    value: 'phone',
+                    value: 'mobile',
                 },
             ],
             onFilter: (value: React.Key | boolean, record: ProductProps) =>
@@ -65,8 +80,17 @@ const ProductManager: React.FC<ProductManagerProps> = ({ productsData }) => {
         {
             title: 'Giá',
             dataIndex: 'price',
-            sorter: (a: ProductProps, b: ProductProps) => {
-                return parseInt(a.price) - parseInt(b.price);
+            sorter: (a: ProductProps, b: ProductProps) => parseInt(a.price) - parseInt(b.price),
+            filters: [
+                { text: 'Dưới 5 triệu', value: '0-5000000' },
+                { text: '5-10 triệu', value: '5000000-10000000' },
+                { text: '10-20 triệu', value: '10000000-20000000' },
+                { text: 'Trên 20 triệu', value: '20000000-999999999' },
+            ],
+            onFilter: (value: React.Key | boolean, record: ProductProps) => {
+                const [min, max] = (value as string).split('-').map(Number);
+                const price = parseInt(record.price);
+                return price >= min && price <= max;
             },
         },
         {

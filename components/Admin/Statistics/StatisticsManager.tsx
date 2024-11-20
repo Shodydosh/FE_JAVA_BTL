@@ -59,7 +59,28 @@ const StatisticsManager: React.FC<StatisticsProps> = ({ statisticsData }) => {
   const [orderStatusData, setOrderStatusData] = useState<any[]>([]);
   const [productShareData, setProductShareData] = useState<any[]>([]);
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+  const COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
+  const CHART_COLORS = {
+    primary: '#6366f1',
+    success: '#22c55e',
+    warning: '#f59e0b',
+    error: '#ef4444',
+  };
+
+  const cardStyle = {
+    borderRadius: '12px',
+    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+    transition: 'all 0.3s ease',
+    ':hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+    }
+  };
+
+  const statisticCardStyle = {
+    ...cardStyle,
+    background: 'linear-gradient(135deg, #fff 0%, #f3f4f6 100%)',
+  };
 
   const filterOrdersByDate = (orders: Order[], startDate: Date | null, endDate: Date | null) => {
     if (!startDate || !endDate) return orders;
@@ -87,7 +108,6 @@ const StatisticsManager: React.FC<StatisticsProps> = ({ statisticsData }) => {
   };
 
   const prepareChartData = (orders: Order[]) => {
-    // Dữ liệu doanh thu theo thời gian
     const revenueByDate = orders.reduce((acc: any, order) => {
       const date = new Date(order.createdAt).toLocaleDateString();
       acc[date] = (acc[date] || 0) + order.totalAmount;
@@ -99,7 +119,6 @@ const StatisticsManager: React.FC<StatisticsProps> = ({ statisticsData }) => {
       revenue: amount,
     }));
 
-    // Dữ liệu đơn hàng theo trạng thái
     const ordersByStatus = orders.reduce((acc: any, order) => {
       acc[order.status] = (acc[order.status] || 0) + 1;
       return acc;
@@ -112,7 +131,6 @@ const StatisticsManager: React.FC<StatisticsProps> = ({ statisticsData }) => {
       count,
     }));
 
-    // Dữ liệu tỷ lệ sản phẩm bán chạy
     const productShareChartData = popularProducts.map(product => ({
       name: product.name,
       value: product.salesCount,
@@ -137,7 +155,6 @@ const StatisticsManager: React.FC<StatisticsProps> = ({ statisticsData }) => {
           const data: Order[] = await response.json();
           setAllOrders(data);
           
-          // Áp dụng các bộ lọc
           let filteredOrders = data;
           if (dateRange[0] && dateRange[1]) {
             filteredOrders = filterOrdersByDate(filteredOrders, dateRange[0], dateRange[1]);
@@ -150,11 +167,9 @@ const StatisticsManager: React.FC<StatisticsProps> = ({ statisticsData }) => {
           
           setRecentOrders(sortedOrders);
           
-          // Tính toán doanh thu từ đơn hàng đã lọc
           const revenue = filteredOrders.reduce((sum, order) => sum + order.totalAmount, 0);
           setTotalRevenue(revenue);
 
-          // Tính toán sản phẩm bán chạy từ đơn hàng đã lọc
           const productStats = new Map<string, PopularProduct>();
           
           filteredOrders.forEach(order => {
@@ -191,13 +206,27 @@ const StatisticsManager: React.FC<StatisticsProps> = ({ statisticsData }) => {
     };
 
     fetchRecentOrders();
-  }, [dateRange, quarter]); // Thêm dependencies
+  }, [dateRange, quarter]);
 
   const productColumns = [
     {
-      title: 'Tên sản phẩm',
-      dataIndex: 'name',
-      key: 'name',
+      title: 'Sản phẩm',
+      key: 'product',
+      render: (record: PopularProduct) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img 
+            src={record.img_url} 
+            alt={record.name} 
+            style={{ 
+              width: '50px', 
+              height: '50px', 
+              objectFit: 'cover',
+              borderRadius: '4px'
+            }} 
+          />
+          <span>{record.name}</span>
+        </div>
+      ),
     },
     {
       title: 'Số lượng đã bán',
@@ -254,44 +283,62 @@ const StatisticsManager: React.FC<StatisticsProps> = ({ statisticsData }) => {
   ];
 
   const renderCharts = () => (
-    <Row gutter={16} style={{ marginTop: '24px' }}>
+    <Row gutter={[24, 24]} style={{ marginTop: '24px' }}>
       <Col span={24}>
-        <Card title="Biểu đồ doanh thu theo thời gian">
+        <Card title="Biểu đồ doanh thu theo thời gian" style={cardStyle}>
           <LineChart width={1100} height={300} data={revenueData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip formatter={(value) => `${value.toLocaleString('vi-VN')}đ`} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <XAxis dataKey="date" stroke="#6b7280" />
+            <YAxis stroke="#6b7280" />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+              }}
+              formatter={(value) => `${value.toLocaleString('vi-VN')}đ`} 
+            />
             <Legend />
             <Line 
               type="monotone" 
               dataKey="revenue" 
-              stroke="#8884d8" 
+              stroke={CHART_COLORS.primary}
+              strokeWidth={3}
+              dot={{ fill: CHART_COLORS.primary }}
               name="Doanh thu"
             />
           </LineChart>
         </Card>
       </Col>
 
-      <Col span={12} style={{ marginTop: '24px' }}>
-        <Card title="Thống kê trạng thái đơn hàng">
+      <Col span={12}>
+        <Card title="Thống kê trạng thái đơn hàng" style={cardStyle}>
           <BarChart width={500} height={300} data={orderStatusData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="status" />
-            <YAxis />
-            <Tooltip />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <XAxis dataKey="status" stroke="#6b7280" />
+            <YAxis stroke="#6b7280" />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+              }}
+            />
             <Legend />
             <Bar 
               dataKey="count" 
-              fill="#82ca9d" 
+              fill={CHART_COLORS.success}
+              radius={[4, 4, 0, 0]}
               name="Số lượng"
             />
           </BarChart>
         </Card>
       </Col>
 
-      <Col span={12} style={{ marginTop: '24px' }}>
-        <Card title="Tỷ lệ sản phẩm bán chạy">
+      <Col span={12}>
+        <Card title="Tỷ lệ sản phẩm bán chạy" style={cardStyle}>
           <PieChart width={500} height={300}>
             <Pie
               data={productShareData}
@@ -307,7 +354,14 @@ const StatisticsManager: React.FC<StatisticsProps> = ({ statisticsData }) => {
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+              }}
+            />
           </PieChart>
         </Card>
       </Col>
@@ -315,10 +369,10 @@ const StatisticsManager: React.FC<StatisticsProps> = ({ statisticsData }) => {
   );
 
   return (
-    <div>
-      <Row gutter={16} style={{ marginBottom: '24px' }}>
+    <div style={{ padding: '24px', backgroundColor: '#f8fafc' }}>
+      <Row gutter={[24, 24]} style={{ marginBottom: '24px' }}>
         <Col span={24}>
-          <Card>
+          <Card style={cardStyle}>
             <Space size="large">
               <div>
                 <span style={{ marginRight: '8px' }}>Khoảng thời gian:</span>
@@ -347,40 +401,44 @@ const StatisticsManager: React.FC<StatisticsProps> = ({ statisticsData }) => {
         </Col>
       </Row>
 
-      <Row gutter={16}>
+      <Row gutter={[24, 24]}>
         <Col span={6}>
-          <Card>
+          <Card style={{ ...statisticCardStyle, borderTop: `4px solid ${CHART_COLORS.primary}` }}>
             <Statistic
-              title="Tổng số người dùng"
+              title={<span style={{ color: '#6b7280', fontSize: '16px' }}>Tổng số người dùng</span>}
               value={statisticsData.totalUsers}
-              prefix={<UserOutlined />}
+              prefix={<UserOutlined style={{ color: CHART_COLORS.primary }} />}
+              valueStyle={{ color: '#111827', fontSize: '24px', fontWeight: 600 }}
             />
           </Card>
         </Col>
         <Col span={6}>
-          <Card>
+          <Card style={{ ...statisticCardStyle, borderTop: `4px solid ${CHART_COLORS.success}` }}>
             <Statistic
-              title="Tổng số sản phẩm"
+              title={<span style={{ color: '#6b7280', fontSize: '16px' }}>Tổng số sản phẩm</span>}
               value={statisticsData.totalProducts}
-              prefix={<ShoppingOutlined />}
+              prefix={<ShoppingOutlined style={{ color: CHART_COLORS.success }} />}
+              valueStyle={{ color: '#111827', fontSize: '24px', fontWeight: 600 }}
             />
           </Card>
         </Col>
         <Col span={6}>
-          <Card>
+          <Card style={{ ...statisticCardStyle, borderTop: `4px solid ${CHART_COLORS.warning}` }}>
             <Statistic
-              title="Tổng số đơn hàng"
+              title={<span style={{ color: '#6b7280', fontSize: '16px' }}>Tổng số đơn hàng</span>}
               value={statisticsData.totalOrders}
-              prefix={<ShoppingCartOutlined />}
+              prefix={<ShoppingCartOutlined style={{ color: CHART_COLORS.warning }} />}
+              valueStyle={{ color: '#111827', fontSize: '24px', fontWeight: 600 }}
             />
           </Card>
         </Col>
         <Col span={6}>
-          <Card>
+          <Card style={{ ...statisticCardStyle, borderTop: `4px solid ${CHART_COLORS.error}` }}>
             <Statistic
-              title="Tổng doanh thu"
+              title={<span style={{ color: '#6b7280', fontSize: '16px' }}>Tổng doanh thu</span>}
               value={totalRevenue}
-              prefix={<DollarOutlined />}
+              prefix={<DollarOutlined style={{ color: CHART_COLORS.error }} />}
+              valueStyle={{ color: '#111827', fontSize: '24px', fontWeight: 600 }}
               formatter={(value) => `${value.toLocaleString('vi-VN')}đ`}
             />
           </Card>
@@ -389,9 +447,9 @@ const StatisticsManager: React.FC<StatisticsProps> = ({ statisticsData }) => {
 
       {renderCharts()}
 
-      <Row gutter={16} style={{ marginTop: '24px' }}>
+      <Row gutter={[24, 24]} style={{ marginTop: '24px' }}>
         <Col span={12}>
-          <Card title="Sản phẩm bán chạy">
+          <Card title="Sản phẩm bán chạy" style={cardStyle}>
             <Table 
               dataSource={popularProducts}
               columns={productColumns}
@@ -402,7 +460,7 @@ const StatisticsManager: React.FC<StatisticsProps> = ({ statisticsData }) => {
           </Card>
         </Col>
         <Col span={12}>
-          <Card title="Đơn hàng gần đây">
+          <Card title="Đơn hàng gần đây" style={cardStyle}>
             <Table 
               dataSource={recentOrders}
               columns={orderColumns}

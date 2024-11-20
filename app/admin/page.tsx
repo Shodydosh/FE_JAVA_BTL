@@ -63,10 +63,10 @@ function getItem(
   }
   
   const items: MenuItem[] = [
-    getItem('Users', 'user', <UserOutlined />),
-    getItem('Products', 'product', <LaptopOutlined/>),
-    getItem('Orders', 'order', <ShoppingCartOutlined/>),
-    getItem('Statistics', 'statistics', <BarChartOutlined/>),
+    getItem('Người dùng', 'user', <UserOutlined />),
+    getItem('Sản phẩm', 'product', <LaptopOutlined/>),
+    getItem('Đơn hàng', 'order', <ShoppingCartOutlined/>),
+    getItem('Thống kê', 'statistics', <BarChartOutlined/>),
   ];
   
 
@@ -311,7 +311,7 @@ const AdminPage = () => {
                 selectedMenuItem === "user" 
                 ? <div>
                     <div className='flex justify-between mt-4 mb-8'>
-                      <h1 className='text-3xl font-bold text-black'>User Manager</h1>
+                      <h1 className='text-3xl font-bold text-black'>Quản lý người dùng</h1>
                       <AddNewUser />
                     </div>
                     <UserManager usersData = {usersData}/> 
@@ -319,7 +319,7 @@ const AdminPage = () => {
                 : selectedMenuItem === "product"
                 ? <div>
                   <div className='flex justify-between mt-4 mb-8'>
-                    <h1 className='text-3xl font-bold text-black'>Product Manager</h1>
+                    <h1 className='text-3xl font-bold text-black'>Quản lý sản phẩm</h1>
                     <AddProductButton/>
                   </div>
                   <ProductManager productsData = {productsData}/>
@@ -327,7 +327,7 @@ const AdminPage = () => {
                 : selectedMenuItem === "order"
                 ? <div>
                     <div className='flex justify-between mt-4 mb-8'>
-                      <h1 className='text-3xl font-bold text-black'>Order Manager</h1>
+                      <h1 className='text-3xl font-bold text-black'>Quản lý đơn hàng</h1>
                     </div>
                     <OrderManager 
                       ordersData={ordersData}
@@ -337,7 +337,7 @@ const AdminPage = () => {
                   </div>
                 : <div>
                     <div className='flex justify-between mt-4 mb-8'>
-                      <h1 className='text-3xl font-bold text-black'>Statistics Dashboard</h1>
+                      <h1 className='text-3xl font-bold text-black'>Bảng điều khiển thống kê</h1>
                     </div>
                     <StatisticsManager statisticsData={statisticsData} />
                   </div>

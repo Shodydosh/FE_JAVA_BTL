@@ -10,7 +10,19 @@ import { UserManagerProps, UserProps } from '../../../interfaces/UserInterfaces'
 const UserManager: React.FC<UserManagerProps> = ({ usersData }) => {
     const columns : ColumnsType<UserProps> = [
         { title: 'UserId', dataIndex: 'id', key: 'id' },
-        { title: 'Name', dataIndex: 'name', key: 'name' },
+        { 
+            title: 'Name', 
+            dataIndex: 'name', 
+            key: 'name',
+            sorter: (a: UserProps, b: UserProps) => (a.name || '').localeCompare(b.name || ''),
+            filterSearch: true,
+            filters: usersData.map(user => ({
+                text: user.name,
+                value: user.name,
+            })),
+            onFilter: (value: React.Key | boolean, record: UserProps) => 
+                record.name?.includes(String(value)) || false
+        },
         { title: 'Role',
             dataIndex: 'role',
             filters: [
@@ -31,16 +43,31 @@ const UserManager: React.FC<UserManagerProps> = ({ usersData }) => {
                 : <Tag color="red">{role}</Tag>
                 )
         },
-        { title: 'Email', dataIndex: 'email', key: 'email' },
+        { 
+            title: 'Email', 
+            dataIndex: 'email', 
+            key: 'email',
+            sorter: (a: UserProps, b: UserProps) => (a.email || '').localeCompare(b.email || ''),
+            filterSearch: true,
+            filters: usersData.map(user => ({
+                text: user.email,
+                value: user.email,
+            })),
+            onFilter: (value: React.Key | boolean, record: UserProps) => 
+                record.email?.includes(String(value)) || false
+        },
         { title: 'Password', dataIndex: 'password', key: 'password' },
         {
             title: 'lastModifiedDate',
             dataIndex: 'lastModifiedDate',
-            sorter: (a: UserProps, b: UserProps) => {
-                if(!a.modifiedDate) return -1
-                if(!b.modifiedDate) return 1
-                return a.modifiedDate.localeCompare(b.modifiedDate)
-            },
+            sorter: {
+                compare: (a: UserProps, b: UserProps) => {
+                    const dateA = a.modifiedDate ? new Date(a.modifiedDate).getTime() : 0;
+                    const dateB = b.modifiedDate ? new Date(b.modifiedDate).getTime() : 0;
+                    return dateA - dateB;
+                },
+                multiple: 1
+            }
         },
         {
             title: 'Action',
