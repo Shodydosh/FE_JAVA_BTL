@@ -172,122 +172,154 @@ const ProductPage = () => {
         }
     };
 
-    // Update the Descriptions items dynamically based on productData
     const productItems = [
         {
             key: 'name',
-            label: 'Tên sản phẩm',
-            children: productData?.name,
+            children: (
+                <h1 className="text-2xl font-bold text-gray-800 mb-2">
+                    {productData?.name}
+                </h1>
+            ),
+            span: 3,
+        },
+        {
+            key: 'rating',
+            children: productData && (
+                <div className="flex items-center gap-2 mb-4">
+                    <Rate disabled value={productData.averageRating} className="text-yellow-400" />
+                    <span className="text-gray-600">
+                        ({productData.totalRatings} đánh giá)
+                    </span>
+                </div>
+            ),
             span: 3,
         },
         {
             key: 'price',
-            label: 'Giá tiền',
-            children: productData?.price ? `${productData.price.toLocaleString('vi-VN')} ₫` : '',
+            children: productData?.price ? (
+                <div className="text-3xl font-bold text-red-600 mb-4">
+                    {productData.price.toLocaleString('vi-VN')} ₫
+                </div>
+            ) : '',
             span: 3,
         },
         {
             key: 'description',
-            label: 'Mô tả',
             children: (
-                <p className="text-gray-600">
-                    Laptop gaming cao cấp với CPU Intel Core i9 12900H (14 nhân, 20 luồng), 
-                    GPU NVIDIA RTX 3070Ti 8GB, RAM 32GB DDR5 (nâng cấp tối đa 64GB), 
-                    SSD 1TB PCIe. Mạnh mẽ cho gaming và đồ họa, trang bị công nghệ 
-                    NVIDIA Optimus và MUX Switch tối ưu hiệu năng.
-                </p>
-            ),
-        },
-        {
-            key: 'rating',
-            label: 'Đánh giá',
-            children: productData && (
-                <div>
-                    <Rate disabled value={productData.averageRating} />
-                    <span className="ml-2">({productData.totalRatings} đánh giá)</span>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold mb-2">Mô tả sản phẩm</h3>
+                    <p className="text-gray-700 leading-relaxed">
+                        Laptop gaming cao cấp với CPU Intel Core i9 12900H (14 nhân, 20 luồng), 
+                        GPU NVIDIA RTX 3070Ti 8GB, RAM 32GB DDR5 (nâng cấp tối đa 64GB), 
+                        SSD 1TB PCIe. Mạnh mẽ cho gaming và đồ họa, trang bị công nghệ 
+                        NVIDIA Optimus và MUX Switch tối ưu hiệu năng.
+                    </p>
                 </div>
             ),
             span: 3,
         },
     ];
 
-    // Update the rating display section to use rating instead of score
-    const ratingSection = (
-        <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-4">Đánh giá từ khách hàng</h3>
-            {ratings.map((rating, index) => (
-                <div key={rating.id || index} className="border-b py-4">
-                    <Rate disabled value={rating.rating} />
-                    <p className="mt-2">{rating.comment}</p>
-                    <p className="text-gray-500 text-sm">
-                        {new Date(rating.createdAt).toLocaleDateString()}
-                    </p>
-                </div>
-            ))}
-        </div>
-    );
-
     return (
-        <div className="container mx-auto p-6">
-            <div className="flex flex-col rounded-lg bg-white p-4 shadow-md md:flex-row">
-                <div className="flex-shrink-0">
+        <div className="container mx-auto p-6 bg-gray-50">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white rounded-xl shadow-lg p-6">
+                {/* Product Image Section */}
+                <div className="relative h-[500px] rounded-xl overflow-hidden">
                     <Image
-                        src={productData?.img_url}
+                        src={productData?.img_url || ''}
                         alt="Hình ảnh sản phẩm"
-                        className="rounded-lg object-cover"
-                        width={400}
-                        height={400}
+                        fill
+                        className="object-contain"
                     />
                 </div>
-                <div className="flex-grow md:ml-4">
+
+                {/* Product Info Section */}
+                <div className="flex flex-col">
                     <Descriptions
-                        title="Thông tin sản phẩm"
-                        bordered
+                        bordered={false}
+                        column={1}
                         items={productItems}
+                        className="product-descriptions"
                     />
-                    <div className="mt-4 flex space-x-2">
+                    
+                    {/* Action Buttons */}
+                    <div className="mt-6 space-y-4">
                         <Button
-                            className="bg-blue-500 text-white transition-colors duration-200 hover:bg-blue-600"
-                            type="default"
-                            icon={<ShoppingCartOutlined />}
-                            size="large"
+                            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold rounded-lg flex items-center justify-center gap-2"
                             onClick={() => addToCart(productData)}
                         >
+                            <ShoppingCartOutlined />
                             Thêm vào giỏ hàng
                         </Button>
-                        <Button type="link" className="text-blue-500">
-                            Gọi đặt mua 1800.1060 (7:30 - 22:00)
-                        </Button>
+                        <div className="flex items-center justify-center gap-2 text-gray-600">
+                            <span className="text-2xl">📞</span>
+                            <span>Gọi đặt mua: 1800.1060 (7:30 - 22:00)</span>
+                        </div>
                     </div>
                 </div>
             </div>
-            <OtherInfo />
-            <Divider className="my-6">Đánh giá sản phẩm</Divider>
 
-            <div className="rounded-lg bg-white p-6 shadow-md">
-                <Form form={form} onFinish={handleRatingSubmit}>
-                    <Form.Item
-                        name="rating"
-                        label="Đánh giá của bạn"
-                        rules={[{ required: true }]}
-                    >
-                        <Rate />
-                    </Form.Item>
-                    <Form.Item name="comment" label="Nhận xét">
-                        <Input.TextArea rows={4} />
-                    </Form.Item>
-                    <Button type="primary" htmlType="submit">
-                        Gửi đánh giá
-                    </Button>
-                </Form>
+            {/* Rating Section */}
+            <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
+                <h2 className="text-2xl font-bold mb-6">Đánh giá sản phẩm</h2>
+                
+                {/* Rating Form */}
+                <div className="bg-gray-50 p-6 rounded-lg mb-8">
+                    <Form form={form} onFinish={handleRatingSubmit} layout="vertical">
+                        <Form.Item
+                            name="rating"
+                            label={<span className="font-semibold">Đánh giá của bạn</span>}
+                            rules={[{ required: true, message: 'Vui lòng chọn số sao' }]}
+                        >
+                            <Rate className="text-yellow-400" />
+                        </Form.Item>
+                        <Form.Item 
+                            name="comment" 
+                            label={<span className="font-semibold">Nhận xét</span>}
+                        >
+                            <Input.TextArea 
+                                rows={4} 
+                                placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..."
+                                className="rounded-lg"
+                            />
+                        </Form.Item>
+                        <Button 
+                            type="primary"
+                            htmlType="submit"
+                            className="bg-blue-600 hover:bg-blue-700 h-10 px-6 rounded-lg"
+                        >
+                            Gửi đánh giá
+                        </Button>
+                    </Form>
+                </div>
 
-                {ratingSection}
+                {/* Reviews List */}
+                <div className="space-y-6">
+                    {ratings.map((rating, index) => (
+                        <div key={rating.id || index} className="border-b border-gray-200 pb-6 last:border-0">
+                            <Rate disabled value={rating.rating} className="text-yellow-400" />
+                            <p className="mt-3 text-gray-700">{rating.comment}</p>
+                            <p className="mt-2 text-sm text-gray-500">
+                                {new Date(rating.createdAt).toLocaleDateString('vi-VN', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                })}
+                            </p>
+                        </div>
+                    ))}
+                </div>
             </div>
 
-            <Divider className="my-6" />
-
-            <Divider className="my-6" />
-            {fetchDone && <OtherProducts data={otherProducts} />}
+            <OtherInfo />
+            
+            {/* Related Products */}
+            {fetchDone && (
+                <div className="mt-8">
+                    <h2 className="text-2xl font-bold mb-6">Sản phẩm tương tự</h2>
+                    <OtherProducts data={otherProducts} />
+                </div>
+            )}
         </div>
     );
 };
