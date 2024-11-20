@@ -11,13 +11,24 @@ const PaymentPage = () => {
     const router = useRouter();
     const [orderData, setOrderData] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [userId, setUserId] = useState<string | null>(null);
 
     useEffect(() => {
         const savedOrder = localStorage.getItem('pendingOrder');
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        const userIdFromStorage = userData.id;
+
+        
         if (!savedOrder) {
             router.push('/cart');
             return;
         }
+        if (!userIdFromStorage) {
+            router.push('/login');
+            return;
+        }
+        
+        setUserId(userIdFromStorage);
         setOrderData(JSON.parse(savedOrder));
     }, [router]);
 
@@ -107,7 +118,8 @@ const PaymentPage = () => {
                 paymentMethod: values.paymentMethod,
                 cardNumber: values.paymentMethod === 'CARD' ? values.cardNumber : null,
                 cardHolder: values.paymentMethod === 'CARD' ? values.cardHolder : null,
-                status: 'PENDING'
+                status: 'PENDING',
+                user: { id: userId }  // Add user information
             };
 
             const orderResponse = await fetch('http://localhost:8080/api/orders/create', {
