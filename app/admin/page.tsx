@@ -1,6 +1,6 @@
 "use client"
 import React, {useState, useEffect} from 'react'
-import { LaptopOutlined, UserOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import { LaptopOutlined, UserOutlined, ShoppingCartOutlined, BarChartOutlined } from '@ant-design/icons';
 import { Breadcrumb, Layout, Menu, Button, Input, Typography } from 'antd';
 const { Header, Content, Footer, Sider } = Layout;
 import type { MenuProps } from 'antd';
@@ -12,6 +12,7 @@ import ProductManager from '../../components/Admin/Product/ProductManager';
 import AddNewUser from '../../components/Admin/User/AddNewUser';
 import AddProductButton from '../../components/Admin/Product/AddProductButton';
 import OrderManager from '../../components/Admin/Order/OrderManager';
+import StatisticsManager from '../../components/Admin/Statistics/StatisticsManager';
 
 function getItem(
     label: React.ReactNode,
@@ -33,6 +34,7 @@ function getItem(
     getItem('Users', 'user', <UserOutlined />),
     getItem('Products', 'product', <LaptopOutlined/>),
     getItem('Orders', 'order', <ShoppingCartOutlined/>),
+    getItem('Statistics', 'statistics', <BarChartOutlined/>),
   ];
   
 
@@ -42,9 +44,66 @@ const AdminPage = () => {
   const [usersData, setUsersData] = useState([]);
   const [productsData, setProductsData] = useState([]);
   const [ordersData, setOrdersData] = useState([]);
+  const [statisticsData, setStatisticsData] = useState({
+    totalUsers: 0,
+    totalProducts: 0,
+    totalOrders: 0,
+    totalRevenue: 0,
+    recentOrders: [],
+    popularProducts: []
+  });
 
   const handleMenuItemClick = (item: any) => {
     setSelectedMenuItem(item.key);
+  };
+
+  const calculateStatistics = () => {
+    const totalUsers = usersData.length;
+    const totalProducts = productsData.length;
+    const totalOrders = ordersData.length;
+    
+    // Calculate total revenue with null check
+    const totalRevenue = ordersData.reduce((sum: number, order: any) => {
+      const orderPrice = order.totalPrice ? parseFloat(order.totalPrice) : 0;
+      return sum + orderPrice;
+    }, 0);
+
+    // Get recent orders (last 5) with null checks
+    const recentOrders = [...ordersData]
+      .filter(order => order && order.orderDate)
+      .sort((a: any, b: any) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime())
+      .slice(0, 5);
+
+    // Calculate popular products with null checks
+    const productCounts = new Map();
+    ordersData.forEach((order: any) => {
+      if (order.orderItems && Array.isArray(order.orderItems)) {
+        order.orderItems.forEach((item: any) => {
+          if (item && item.productId) {
+            const count = productCounts.get(item.productId) || 0;
+            productCounts.set(item.productId, count + (parseInt(item.quantity) || 1));
+          }
+        });
+      }
+    });
+
+    const popularProducts = Array.from(productCounts.entries())
+      .map(([productId, count]) => ({
+        product: productsData.find((p: any) => p.id === productId) || null,
+        soldCount: count
+      }))
+      .filter(item => item.product !== null)
+      .sort((a, b) => b.soldCount - a.soldCount)
+      .slice(0, 5);
+
+    setStatisticsData({
+      totalUsers,
+      totalProducts,
+      totalOrders,
+      totalRevenue,
+      recentOrders,
+      popularProducts
+    });
   };
 
   useEffect(() => {
@@ -52,7 +111,7 @@ const AdminPage = () => {
     const apiUrl = 'http://localhost:8080/api/';
   
     // Make the GET request using Axios
-    console.log("🚀 ~ file: page.tsx:55 ~ useEffect ~ isLoading:", isLoading)
+    console.log("���� ~ file: page.tsx:55 ~ useEffect ~ isLoading:", isLoading)
     if (isLoading) {
       fetch(apiUrl + 'product')
         .then(response => {
@@ -105,10 +164,12 @@ const AdminPage = () => {
   useEffect(() => {
     console.log(123); // Log 123 only once
   }, [isLoading]);
-  // useEffect(() => {
-  //   // Handle the selectedMenuItem value whenever it changes.
-  //   console.log('Selected Menu Item:', selectedMenuItem);
-  // }, [selectedMenuItem]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      calculateStatistics();
+    }
+  }, [usersData, productsData, ordersData, isLoading]);
 
   const handleOrderStatusUpdate = async (id: string, status: string) => {
     try {
@@ -191,7 +252,8 @@ const AdminPage = () => {
                   </div>
                   <ProductManager productsData = {productsData}/>
                 </div>
-                : <div>
+                : selectedMenuItem === "order"
+                ? <div>
                     <div className='flex justify-between mt-4 mb-8'>
                       <h1 className='text-3xl font-bold text-black'>Order Manager</h1>
                     </div>
@@ -200,6 +262,12 @@ const AdminPage = () => {
                       onStatusUpdate={handleOrderStatusUpdate}
                       onOrderDelete={handleOrderDelete}
                     />
+                  </div>
+                : <div>
+                    <div className='flex justify-between mt-4 mb-8'>
+                      <h1 className='text-3xl font-bold text-black'>Statistics Dashboard</h1>
+                    </div>
+                    <StatisticsManager statisticsData={statisticsData} />
                   </div>
               }
             </Content>
