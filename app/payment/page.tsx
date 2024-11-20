@@ -160,6 +160,16 @@ const PaymentPage = () => {
                 orderItems: orderData.items
             });
 
+            // Clear the cart
+            const cartResponse = await fetch('http://localhost:8080/api/cart/59cd9ce2-1b15-4fe9-a775-9169fc90c907/clear', {
+                method: 'DELETE',
+                credentials: 'include',
+            });
+
+            if (!cartResponse.ok) {
+                console.error('Failed to clear cart');
+            }
+
             localStorage.removeItem('pendingOrder');
             notification.success({
                 message: 'Đặt hàng thành công',
@@ -244,7 +254,7 @@ const PaymentPage = () => {
 
                             <div className="mt-6 border-t pt-6">
                                 <div className="flex justify-between mb-2">
-                                    <span>Tổng tiền hàng:</span>
+                                    <span>T���ng tiền hàng:</span>
                                     <span className="font-semibold">
                                         {new Intl.NumberFormat('vi-VN', {
                                             style: 'currency',
