@@ -134,6 +134,11 @@ const Header = () => {
                                 menu={{
                                     items: [
                                         {
+                                            label: 'Lịch sử đặt hàng',
+                                            key: 'order-history',
+                                            onClick: () => router.push('/order-history'),
+                                        },
+                                        {
                                             label: 'Đăng xuất',
                                             key: 'logout',
                                             danger: true,
