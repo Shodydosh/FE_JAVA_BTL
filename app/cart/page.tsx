@@ -47,28 +47,66 @@ const CartPage: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [form] = Form.useForm();
     const router = useRouter();
+    const [cartId, setCartId] = useState<string | null>(null);
+
+    const getCartId = async (userId: string) => {
+        try {
+            const response = await fetch(
+                `http://localhost:8080/api/cart/user/${userId}`,
+                {
+                    credentials: 'include',
+                }
+            );
+            if (!response.ok) {
+                throw new Error('Failed to fetch cart');
+            }
+            const cartData = await response.json();
+            return cartData.id;
+        } catch (error) {
+            console.error('Error fetching cart:', error);
+            return null;
+        }
+    };
 
     useEffect(() => {
-        const fetchCartItems = async () => {
+        const fetchCart = async () => {
             try {
-                const response = await fetch('http://localhost:8080/api/cartitems/59cd9ce2-1b15-4fe9-a775-9169fc90c907', {
-                    credentials: 'include'
-                });
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                const userId = userData.id;
+                if (!userId) {
+                    notification.error({
+                        message: 'Chưa đăng nhập',
+                        description: 'Vui lòng đăng nhập để xem giỏ hàng',
+                    });
+                    router.push('/login');
+                    return;
+                }
+
+                const cartId = await getCartId(userId);
+                if (!cartId) return;
+                
+                setCartId(cartId);
+
+                const response = await fetch(
+                    `http://localhost:8080/api/cartitems/cart/${cartId}`,
+                    {
+                        credentials: 'include',
+                    }
+                );
                 if (!response.ok) {
                     throw new Error('Failed to fetch cart items');
                 }
                 const data = await response.json();
-                // Wrap the single item in an array if the API returns a single object
                 setCartItems(Array.isArray(data) ? data : [data]);
             } catch (error) {
-                console.error('Error fetching cart items:', error);
+                console.error('Error fetching cart data:', error);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchCartItems();
-    }, []);
+        fetchCart();
+    }, [router]);
 
     const groupedCartItems = useMemo(() => {
         const grouped = cartItems.reduce((acc, item) => {
@@ -99,10 +137,15 @@ const CartPage: React.FC = () => {
 
     const removeHandler = async (id: string) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/cartitems/delete/59cd9ce2-1b15-4fe9-a775-9169fc90c907/${id}`, {
-                method: 'DELETE',
-                credentials: 'include'
-            });
+            if (!cartId) return;
+
+            const response = await fetch(
+                `http://localhost:8080/api/cartitems/delete/${cartId}/${id}`,
+                {
+                    method: 'DELETE',
+                    credentials: 'include',
+                }
+            );
             if (!response.ok) {
                 throw new Error('Failed to delete cart item');
             }
