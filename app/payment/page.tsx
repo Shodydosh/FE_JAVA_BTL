@@ -7,13 +7,11 @@ import Header from '@/components/Core/Header';
 import emailjs from '@emailjs/browser';
 
 const PaymentPage = () => {
-    // Khởi tạo các hooks cần thiết
     const [form] = Form.useForm();
     const router = useRouter();
     const [orderData, setOrderData] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Lấy dữ liệu đơn hàng từ localStorage khi component mount
     useEffect(() => {
         const savedOrder = localStorage.getItem('pendingOrder');
         if (!savedOrder) {
@@ -26,7 +24,6 @@ const PaymentPage = () => {
     const sendOrderNotificationToAdmin = async (orderData: any) => {
         try {
             const templateParams = {
-                // Parameters for admin notification
                 order_number: orderData.orderId,
                 order_total: new Intl.NumberFormat('vi-VN', {
                     style: 'currency',
@@ -57,12 +54,50 @@ const PaymentPage = () => {
         }
     };
 
-    // Xử lý submit form thanh toán
+    const createShipment = async (orderId: string, orderData: any) => {
+        try {
+            const shipmentPayload = {
+                trackingNumber: `SHIP-${Date.now()}`,
+                recipientName: orderData.customerName,
+                recipientPhone: orderData.phoneNumber,
+                shippingAddress: orderData.shippingAddress,
+                notes: orderData.note || '',
+                shippingFee: 0,
+                status: 'PENDING',
+                order: { id: orderId }
+            };
+
+            const response = await fetch('http://localhost:8080/api/shipments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify(shipmentPayload),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(`Shipment creation failed: ${errorData}`);
+            }
+
+            const data = await response.json();
+            if (!data) {
+                throw new Error('No data received from shipment creation');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Shipment creation error:', error);
+            throw new Error(error instanceof Error ? error.message : 'Failed to create shipment');
+        }
+    };
+
     const handleSubmit = async (values: any) => {
         try {
             setIsSubmitting(true);
 
-            // 1. First create the order without items
             const orderPayload = {
                 totalAmount: orderData.totalAmount,
                 shippingAddress: orderData.shippingAddress,
@@ -90,7 +125,15 @@ const PaymentPage = () => {
                 throw new Error(orderResponseData.message || 'Failed to create order');
             }
 
-            // 2. Then create order items with the order ID
+            let shipmentResult;
+            try {
+                shipmentResult = await createShipment(orderResponseData.id, orderData);
+                console.log('Shipment created:', shipmentResult);
+            } catch (shipmentError) {
+                console.error('Shipment creation failed:', shipmentError);
+                // Continue with the order process even if shipment creation fails
+            }
+
             const orderItemsPromises = orderData.items.map(async (item: any) => {
                 const orderItemPayload = {
                     order: { id: orderResponseData.id },
@@ -111,18 +154,16 @@ const PaymentPage = () => {
 
             await Promise.all(orderItemsPromises);
 
-            // 3. Send notification with complete order data
             await sendOrderNotificationToAdmin({
                 ...orderPayload,
                 orderId: orderResponseData.id,
                 orderItems: orderData.items
             });
 
-            // Clean up and redirect
             localStorage.removeItem('pendingOrder');
             notification.success({
                 message: 'Đặt hàng thành công',
-                description: 'Cảm ơn bạn đã mua hàng! Email xác nhận đã được gửi.'
+                description: 'Đơn hàng và vận chuyển đã được tạo. Email xác nhận đã được gửi.'
             });
 
             router.push('/');
@@ -139,12 +180,10 @@ const PaymentPage = () => {
         }
     };
 
-    // Hiển thị loading khi chưa có dữ liệu
     if (!orderData) {
         return <Spin />;
     }
 
-    // Render giao diện thanh toán
     return (
         <>
             <Header />
@@ -175,7 +214,6 @@ const PaymentPage = () => {
                                 </Radio.Group>
                             </Form.Item>
 
-                            {/* Form fields cho thanh toán bằng thẻ */}
                             <Form.Item
                                 noStyle
                                 shouldUpdate={(prevValues, currentValues) => 
@@ -204,7 +242,6 @@ const PaymentPage = () => {
                                 }
                             </Form.Item>
 
-                            {/* Hiển thị tổng tiền và nút đặt hàng */}
                             <div className="mt-6 border-t pt-6">
                                 <div className="flex justify-between mb-2">
                                     <span>Tổng tiền hàng:</span>
