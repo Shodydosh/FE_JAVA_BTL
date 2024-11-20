@@ -1,5 +1,5 @@
-import React from 'react';
-import { Table, Tag, Space, Button, Modal, Select } from 'antd';
+import React, { useState } from 'react';
+import { Table, Tag, Space, Button, Modal, Select, message } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
@@ -17,6 +17,7 @@ const ShipmentManager: React.FC<ShipmentManagerProps> = ({
   onStatusUpdate 
 }) => {
   const { confirm } = Modal;
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   const showDeleteConfirm = (id: string) => {
     confirm({
@@ -29,6 +30,18 @@ const ShipmentManager: React.FC<ShipmentManagerProps> = ({
         onDelete(id);
       },
     });
+  };
+
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    try {
+      setUpdatingStatus(id);
+      await onStatusUpdate(id, newStatus);
+      message.success('Cập nhật trạng thái thành công');
+    } catch (error) {
+      message.error('Không thể cập nhật trạng thái');
+    } finally {
+      setUpdatingStatus(null);
+    }
   };
 
   const columns = [
@@ -71,8 +84,10 @@ const ShipmentManager: React.FC<ShipmentManagerProps> = ({
       render: (status: string, record: any) => (
         <Select
           value={status}
-          onChange={(value) => onStatusUpdate(record.id, value)}
+          onChange={(value) => handleStatusChange(record.id, value)}
           style={{ width: 120 }}
+          disabled={updatingStatus === record.id}
+          loading={updatingStatus === record.id}
         >
           <Select.Option value="PENDING">Chờ xử lý</Select.Option>
           <Select.Option value="IN_TRANSIT">Đang vận chuyển</Select.Option>
