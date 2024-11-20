@@ -6,6 +6,7 @@ import LoginForm from '@/components/form/login';
 import { useRouter } from 'next/navigation';
 import { axiosInstance } from '@/lib/http/axios-instance';
 import { useAuth } from '@/hooks/useAuth';
+import { jwtDecode } from "jwt-decode";
 
 interface LoginModalProps extends ModalProps {
     isOpen: boolean;
@@ -31,14 +32,23 @@ const LoginModal: React.FC<LoginModalProps> = () => {
                 throw new Error('Token not found');
             }
 
+            // Store the token
             localStorage.setItem('token', JSON.stringify(response));
 
+            // Decode token to get email
+            const decodedToken: any = jwtDecode(response);
+            const userEmail = decodedToken.sub;
+            console.log('userEmail: ', userEmail);
+            
+            // Fixed URL path - removed duplicate /api
+            const userResponse = await axiosInstance.get(`/client/users/email/${userEmail}`);
+            if (userResponse?.data) {
+                localStorage.setItem('USERID', userResponse.data.id);
+            }
+            console.log('userResponse: ', userResponse);
             formInstace.resetFields();
-
             setIsOpenLoginModal(false);
-
             mutate(null);
-
             message.success('Login successfully');
         } catch (error: any) {
             console.log(error);
