@@ -10,14 +10,14 @@ import OtherInfo from '@/components/ProductPage/OtherInfo';
 import OtherProducts from '@/components/ProductPage/OtherProducts';
 
 interface RatingSubmission {
-    score: number;  // Changed from rating to score to match backend
+    rating: number;  // Changed from score to rating to match backend model
     comment: string;
-    userId: string; // Add userId field
+    userId: string;
 }
 
 interface Rating {
     id: string;
-    score: number;  // Changed from rating to score to match backend model
+    rating: number;  // Changed from score to rating to match backend model
     comment: string;
     createdAt: string;
 }
@@ -74,10 +74,16 @@ const ProductPage = () => {
                     );
                     setRatings(ratingsResponse.data);
 
+                    // Update average rating
                     const avgRatingResponse = await axios.get(
                         `http://localhost:8080/api/ratings/product/${params.productId}/average`
                     );
-                    setAverageRating(avgRatingResponse.data);
+                    // Update the productData with the new average rating
+                    setProductData(prev => ({
+                        ...prev!,
+                        averageRating: avgRatingResponse.data,
+                        totalRatings: ratingsResponse.data.length
+                    }));
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -121,7 +127,7 @@ const ProductPage = () => {
             const userId = "59cd9ce2-1b15-4fe9-a775-9169fc90c907"; // Same as the cart user ID
 
             const ratingSubmission: RatingSubmission = {
-                score: values.rating,
+                rating: values.rating,  // Changed from score to rating
                 comment: values.comment || '',
                 userId: userId
             };
@@ -205,13 +211,13 @@ const ProductPage = () => {
         },
     ];
 
-    // Update the rating display section to use score instead of rating
+    // Update the rating display section to use rating instead of score
     const ratingSection = (
         <div className="mt-6">
             <h3 className="text-lg font-semibold mb-4">Đánh giá từ khách hàng</h3>
             {ratings.map((rating, index) => (
                 <div key={rating.id || index} className="border-b py-4">
-                    <Rate disabled value={rating.score} />
+                    <Rate disabled value={rating.rating} />
                     <p className="mt-2">{rating.comment}</p>
                     <p className="text-gray-500 text-sm">
                         {new Date(rating.createdAt).toLocaleDateString()}
@@ -255,12 +261,16 @@ const ProductPage = () => {
                     </div>
                 </div>
             </div>
-            
+            <OtherInfo />
             <Divider className="my-6">Đánh giá sản phẩm</Divider>
-            
-            <div className="bg-white p-6 rounded-lg shadow-md">
+
+            <div className="rounded-lg bg-white p-6 shadow-md">
                 <Form form={form} onFinish={handleRatingSubmit}>
-                    <Form.Item name="rating" label="Đánh giá của bạn" rules={[{ required: true }]}>
+                    <Form.Item
+                        name="rating"
+                        label="Đánh giá của bạn"
+                        rules={[{ required: true }]}
+                    >
                         <Rate />
                     </Form.Item>
                     <Form.Item name="comment" label="Nhận xét">
@@ -275,7 +285,7 @@ const ProductPage = () => {
             </div>
 
             <Divider className="my-6" />
-            <OtherInfo />
+
             <Divider className="my-6" />
             {fetchDone && <OtherProducts data={otherProducts} />}
         </div>
