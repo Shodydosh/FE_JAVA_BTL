@@ -10,7 +10,7 @@ import {
     UserOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Breadcrumb, Layout, Menu, Button, Input, Typography } from 'antd';
+import { Breadcrumb, Layout, Menu, Button, Input, Typography, Pagination } from 'antd';
 
 import Banner from '../../components/home/Banner';
 import ProductList from '../../components/home/ProductList';
@@ -49,6 +49,8 @@ const App: React.FC = () => {
     const [data, setData] = useState([]);
     const [product, setProduct] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 8; // số sản phẩm trên mỗi trang
 
     useEffect(() => {
         // Define the URL you want to fetch data from
@@ -76,6 +78,17 @@ const App: React.FC = () => {
 
     useEffect(() => {}, [isLoading]);
 
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    // Tính toán sản phẩm cho trang hiện tại
+    const getCurrentProducts = () => {
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        return product.slice(startIndex, endIndex);
+    };
+
     return isLoading ? (
         <LoadingPage />
     ) : (
@@ -83,7 +96,18 @@ const App: React.FC = () => {
             <Layout>
                 <Layout style={{ padding: '0 24px 24px' }}>
                     <Content className="min-h-screen w-full">
-                        <ProductList className="small-product-cards" productData={product} />
+                        <ProductList 
+                            className="small-product-cards" 
+                            productData={getCurrentProducts()} 
+                        />
+                        <div className="flex justify-center mt-4">
+                            <Pagination
+                                current={currentPage}
+                                total={product.length}
+                                pageSize={pageSize}
+                                onChange={handlePageChange}
+                            />
+                        </div>
                     </Content>
                 </Layout>
             </Layout>
