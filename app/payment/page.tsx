@@ -254,7 +254,7 @@ const PaymentPage = () => {
 
                             <div className="mt-6 border-t pt-6">
                                 <div className="flex justify-between mb-2">
-                                    <span>T���ng tiền hàng:</span>
+                                    <span>Tổng tiền hàng:</span>
                                     <span className="font-semibold">
                                         {new Intl.NumberFormat('vi-VN', {
                                             style: 'currency',

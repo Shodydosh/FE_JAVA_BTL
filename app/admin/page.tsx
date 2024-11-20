@@ -1,6 +1,6 @@
 "use client"
 import React, {useState, useEffect} from 'react'
-import { LaptopOutlined, UserOutlined, ShoppingCartOutlined, BarChartOutlined } from '@ant-design/icons';
+import { LaptopOutlined, UserOutlined, ShoppingCartOutlined, BarChartOutlined, CarOutlined } from '@ant-design/icons';
 import { Breadcrumb, Layout, Menu, Button, Input, Typography } from 'antd';
 const { Header, Content, Footer, Sider } = Layout;
 import type { MenuProps } from 'antd';
@@ -13,6 +13,20 @@ import AddNewUser from '../../components/Admin/User/AddNewUser';
 import AddProductButton from '../../components/Admin/Product/AddProductButton';
 import OrderManager from '../../components/Admin/Order/OrderManager';
 import StatisticsManager from '../../components/Admin/Statistics/StatisticsManager';
+import ShipmentManager from '../../components/Admin/Shipment/ShipmentManager';
+
+interface OrderItem {
+  id: string;
+  product: {
+    id: string;
+    name: string;
+    price: number;
+    img_url: string;
+    retailer: string;
+  };
+  quantity: number;
+  price: number;
+}
 
 interface Order {
   id: string;
@@ -32,18 +46,25 @@ interface Order {
   createdAt: string;
 }
 
-interface OrderItem {
+interface Shipment {
   id: string;
-  order: Order;
-  product: {
-    id: string;
-    name: string;
-    price: number;
-    img_url: string;
-    retailer: string;
-  };
-  quantity: number;
-  price: number;
+  trackingNumber: string;
+  recipientName: string;
+  recipientPhone: string;
+  shippingAddress: string;
+  notes: string;
+  shippingFee: number;
+  status: ShipmentStatus;
+  createdAt: string;
+  updatedAt: string;
+  order: Order; // Now contains full Order object instead of just ID
+}
+
+enum ShipmentStatus {
+  PENDING = 'PENDING',
+  IN_TRANSIT = 'IN_TRANSIT',
+  DELIVERED = 'DELIVERED',
+  CANCELLED = 'CANCELLED'
 }
 
 function getItem(
@@ -66,6 +87,7 @@ function getItem(
     getItem('Người dùng', 'user', <UserOutlined />),
     getItem('Sản phẩm', 'product', <LaptopOutlined/>),
     getItem('Đơn hàng', 'order', <ShoppingCartOutlined/>),
+    getItem('Vận chuyển', 'shipment', <CarOutlined/>),
     getItem('Thống kê', 'statistics', <BarChartOutlined/>),
   ];
   
@@ -76,6 +98,7 @@ const AdminPage = () => {
   const [usersData, setUsersData] = useState([]);
   const [productsData, setProductsData] = useState([]);
   const [ordersData, setOrdersData] = useState([]);
+  const [shipmentsData, setShipmentsData] = useState([]);
   const [statisticsData, setStatisticsData] = useState({
     totalUsers: 0,
     totalProducts: 0,
@@ -84,6 +107,8 @@ const AdminPage = () => {
     recentOrders: [],
     popularProducts: []
   });
+  const [isShipmentsLoading, setIsShipmentsLoading] = useState(true);
+  const [shipmentsError, setShipmentsError] = useState<string | null>(null);
 
   const handleMenuItemClick = (item: any) => {
     setSelectedMenuItem(item.key);
@@ -191,8 +216,33 @@ const AdminPage = () => {
         .catch(error => {
           console.error('Fetch error:', error);
         });
+      fetch(apiUrl + 'shipments/all')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((data: Shipment[]) => {
+          // Ensure each shipment has the complete order data
+          const shipmentsWithFullOrders = data.map(shipment => ({
+            ...shipment,
+            order: ordersData.find(order => order.id === shipment.order.id) || shipment.order
+          }));
+          setShipmentsData(shipmentsWithFullOrders);
+          setIsShipmentsLoading(false);
+          setShipmentsError(null);
+        })
+        .catch(error => {
+          console.error('Shipments fetch error:', error);
+          setShipmentsError(error.message);
+          setIsShipmentsLoading(false);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
-  }, []); 
+  }, [ordersData]); // Add ordersData as dependency
   useEffect(() => {
     console.log(123); // Log 123 only once
   }, [isLoading]);
@@ -288,6 +338,79 @@ const AdminPage = () => {
       console.error('Error updating order status:', error);
     }
   };
+
+  const handleShipmentDelete = async (id: string) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/shipments/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete shipment');
+      setShipmentsData(shipmentsData.filter(s => s.id !== id));
+    } catch (error) {
+      console.error('Error deleting shipment:', error);
+    }
+  };
+
+  const handleShipmentUpdate = async (id: string, shipment: Partial<Shipment>) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/shipments/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(shipment),
+      });
+      if (!response.ok) throw new Error('Failed to update shipment');
+      const updatedShipment = await response.json();
+      setShipmentsData(shipmentsData.map(s => s.id === id ? updatedShipment : s));
+    } catch (error) {
+      console.error('Error updating shipment:', error);
+    }
+  };
+
+  const handleShipmentStatusUpdate = async (id: string, status: ShipmentStatus) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/shipments/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) throw new Error('Failed to update shipment status');
+      const updatedShipment = await response.json();
+      setShipmentsData(shipmentsData.map(s => s.id === id ? updatedShipment : s));
+    } catch (error) {
+      console.error('Error updating shipment status:', error);
+    }
+  };
+
+  const handleCreateShipment = async (shipment: Partial<Shipment>) => {
+    try {
+      // Ensure order data is properly structured
+      const shipmentData = {
+        ...shipment,
+        order: {
+          id: shipment.order?.id
+        }
+      };
+
+      const response = await fetch('http://localhost:8080/api/shipments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(shipmentData),
+      });
+
+      if (!response.ok) throw new Error('Failed to create shipment');
+      const newShipment = await response.json();
+      
+      // Add full order details to new shipment
+      const shipmentWithFullOrder = {
+        ...newShipment,
+        order: ordersData.find(order => order.id === newShipment.order.id) || newShipment.order
+      };
+      
+      setShipmentsData([...shipmentsData, shipmentWithFullOrder]);
+    } catch (error) {
+      console.error('Error creating shipment:', error);
+    }
+  };
   
   return (isLoading ? (
     <LoadingPage />
@@ -334,6 +457,24 @@ const AdminPage = () => {
                       onStatusUpdate={handleOrderStatusUpdate}
                       onOrderDelete={handleOrderDelete}
                     />
+                  </div>
+                : selectedMenuItem === "shipment"
+                ? <div>
+                    <div className='flex justify-between mt-4 mb-8'>
+                      <h1 className='text-3xl font-bold text-black'>Quản lý vận chuyển</h1>
+                    </div>
+                    {shipmentsError ? (
+                      <div className="text-red-500">Error loading shipments: {shipmentsError}</div>
+                    ) : isShipmentsLoading ? (
+                      <LoadingPage />
+                    ) : (
+                      <ShipmentManager 
+                        shipmentsData={shipmentsData}
+                        onDelete={handleShipmentDelete}
+                        onUpdate={handleShipmentUpdate}
+                        onStatusUpdate={handleShipmentStatusUpdate}
+                      />
+                    )}
                   </div>
                 : <div>
                     <div className='flex justify-between mt-4 mb-8'>
