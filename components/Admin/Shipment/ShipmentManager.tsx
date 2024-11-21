@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
-import { Table, Select, message } from 'antd';
+import { Table, Select, message, Modal, Tag, Space, Button, Spin } from 'antd';
 import dayjs from 'dayjs';
+import { ExclamationCircleOutlined, EyeOutlined } from '@ant-design/icons';
+
+interface OrderItem {
+  id: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  price: number;
+  productImage?: string;
+  sku?: string;
+}
 
 interface Shipment {
   id: string;
@@ -13,6 +24,8 @@ interface Shipment {
   createdAt: string;
   updatedAt: string;
   notes?: string;
+  orderItems: OrderItem[];
+  totalAmount: number;
 }
 
 enum ShipmentStatus {
@@ -38,6 +51,22 @@ interface ApiError {
   status: number;
 }
 
+interface ShipmentItemsResponse {
+  orderItems: OrderItem[];
+  totalAmount: number;
+}
+
+interface OrderItemResponse {
+  id: string;
+  product: {
+    id: string;
+    name: string;
+    img_url: string;
+  };
+  quantity: number;
+  price: number;
+}
+
 const ShipmentManager: React.FC<ShipmentManagerProps> = ({ 
   shipmentsData: initialShipments,  // rename prop to indicate it's initial data
   onDelete, 
@@ -46,14 +75,18 @@ const ShipmentManager: React.FC<ShipmentManagerProps> = ({
 }) => {
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [shipments, setShipments] = useState<Shipment[]>(initialShipments);
+  const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [loadingOrderItems, setLoadingOrderItems] = useState(false);
 
   const showDeleteConfirm = (id: string) => {
-    confirm({
-      title: 'Bạn có chắc chắn muốn xóa đơn vận chuyển này?',
-      content: 'Hành động này không thể hoàn tác',
-      okText: 'Có',
-      okType: 'danger',
-      cancelText: 'Không',
+    Modal.confirm({
+      title: 'Xác nhận xóa',
+      icon: <ExclamationCircleOutlined className="text-red-500" />,
+      content: 'Bạn có chắc chắn muốn xóa đơn vận chuyển này?',
+      okText: 'Xóa',
+      okButtonProps: { className: 'bg-red-500 hover:bg-red-600' },
+      cancelText: 'Hủy',
       onOk() {
         onDelete(id);
       },
@@ -98,27 +131,92 @@ const ShipmentManager: React.FC<ShipmentManagerProps> = ({
     }
   };
 
+  const getStatusColor = (status: ShipmentStatus): string => {
+    const colors: Record<ShipmentStatus, string> = {
+      [ShipmentStatus.PENDING]: 'blue',
+      [ShipmentStatus.CONFIRMED]: 'cyan',
+      [ShipmentStatus.PROCESSING]: 'orange',
+      [ShipmentStatus.SHIPPING]: 'geekblue',
+      [ShipmentStatus.DELIVERED]: 'green',
+      [ShipmentStatus.CANCELLED]: 'red',
+      [ShipmentStatus.RETURNED]: 'purple',
+    };
+    return colors[status];
+  };
+
+  const showShipmentDetail = async (shipment: Shipment) => {
+    try {
+      setSelectedShipment(shipment);
+      setIsDetailModalVisible(true);
+      setLoadingOrderItems(true);
+
+      // Get orderId as plain text
+      const orderIdResponse = await fetch(`/api/shipments/${shipment.id}/order-id`);
+      if (!orderIdResponse.ok) throw new Error('Failed to fetch order ID');
+      const orderId = await orderIdResponse.text(); // Change from .json() to .text()
+
+      // Then fetch order items using order ID
+      const orderItemsResponse = await fetch(`/api/orderItems/order/${orderId}`);
+      if (!orderItemsResponse.ok) throw new Error('Failed to fetch order items');
+      const orderItems: OrderItemResponse[] = await orderItemsResponse.json();
+
+      // Rest of the function remains the same...
+      const transformedItems: OrderItem[] = orderItems.map(item => ({
+        id: item.id,
+        productId: item.product.id,
+        productName: item.product.name,
+        productImage: item.product.img_url,
+        quantity: item.quantity,
+        price: item.price,
+        sku: '-'
+      }));
+
+      const totalAmount = transformedItems.reduce(
+        (sum, item) => sum + (item.price * item.quantity), 
+        0
+      );
+
+      setSelectedShipment(prev => prev ? {
+        ...prev,
+        orderItems: transformedItems,
+        totalAmount: totalAmount
+      } : null);
+
+    } catch (error) {
+      message.error('Không thể tải thông tin chi tiết đơn hàng');
+      console.error('Error:', error);
+    } finally {
+      setLoadingOrderItems(false);
+    }
+  };
+
   const columns = [
     {
-      title: 'Mã vận chuyển',
+      title: 'ID',
       dataIndex: 'id',
       key: 'id',
       width: 180,
+      render: (text: string) => (
+        <span className="font-medium text-gray-700">{text}</span>
+      ),
     },
     {
       title: 'Mã vận đơn',
       dataIndex: 'trackingNumber',
       key: 'trackingNumber',
       width: 150,
+      render: (text: string) => (
+        <span className="font-medium text-blue-600">{text}</span>
+      ),
     },
     {
       title: 'Người nhận',
       key: 'recipient',
       width: 180,
-      render: (record: any) => (
-        <div>
-          <div>{record.recipientName}</div>
-          <div>{record.recipientPhone}</div>
+      render: (record: Shipment) => (
+        <div className="space-y-1">
+          <div className="font-medium">{record.recipientName}</div>
+          <div className="text-gray-500 text-sm">{record.recipientPhone}</div>
         </div>
       ),
     },
@@ -127,13 +225,20 @@ const ShipmentManager: React.FC<ShipmentManagerProps> = ({
       dataIndex: 'shippingAddress',
       key: 'shippingAddress',
       width: 250,
+      render: (text: string) => (
+        <div className="text-sm text-gray-600">{text}</div>
+      ),
     },
     {
       title: 'Phí vận chuyển',
       dataIndex: 'shippingFee',
       key: 'shippingFee',
       width: 120,
-      render: (fee: number) => `${fee.toLocaleString('vi-VN')}đ`,
+      render: (fee: number) => (
+        <span className="font-medium text-green-600">
+          {fee.toLocaleString('vi-VN')}đ
+        </span>
+      ),
     },
     {
       title: 'Trạng thái',
@@ -144,17 +249,16 @@ const ShipmentManager: React.FC<ShipmentManagerProps> = ({
         <Select
           value={status}
           onChange={(value) => handleStatusChange(record.id, value as ShipmentStatus)}
-          style={{ width: 150 }}
+          className="w-full"
           disabled={updatingStatus === record.id}
           loading={updatingStatus === record.id}
+          size="middle"
         >
-          <Select.Option value={ShipmentStatus.PENDING}>Chờ xử lý</Select.Option>
-          <Select.Option value={ShipmentStatus.CONFIRMED}>Đã xác nhận</Select.Option>
-          <Select.Option value={ShipmentStatus.PROCESSING}>Đang xử lý</Select.Option>
-          <Select.Option value={ShipmentStatus.SHIPPING}>Đang giao hàng</Select.Option>
-          <Select.Option value={ShipmentStatus.DELIVERED}>Đã giao hàng</Select.Option>
-          <Select.Option value={ShipmentStatus.CANCELLED}>Đã hủy</Select.Option>
-          <Select.Option value={ShipmentStatus.RETURNED}>Đã hoàn trả</Select.Option>
+          {Object.values(ShipmentStatus).map((s) => (
+            <Select.Option key={s} value={s}>
+              {s}
+            </Select.Option>
+          ))}
         </Select>
       ),
     },
@@ -179,16 +283,148 @@ const ShipmentManager: React.FC<ShipmentManagerProps> = ({
       width: 200,
       ellipsis: true,
     },
+    {
+      title: 'Thao tác',
+      key: 'actions',
+      width: 120,
+      render: (_, record: Shipment) => (
+        <Button
+          type="primary"
+          icon={<EyeOutlined />}
+          onClick={() => showShipmentDetail(record)}
+        >
+          Xem chi tiết
+        </Button>
+      ),
+    }
   ];
 
   return (
-    <Table 
-      columns={columns} 
-      dataSource={shipments} // Sử dụng state thay vì prop
-      rowKey="id"
-      pagination={{ pageSize: 10 }}
-      scroll={{ x: 1500 }}
-    />
+    <div className="bg-white rounded-lg shadow">
+      <Table 
+        columns={columns} 
+        dataSource={shipments} // Sử dụng state thay vì prop
+        rowKey="id"
+        pagination={{ 
+          pageSize: 10,
+          showSizeChanger: true,
+          showTotal: (total) => `Tổng số ${total} đơn hàng`,
+          className: "p-4"
+        }}
+        scroll={{ x: 1500 }}
+        className="border border-gray-200"
+        rowClassName="hover:bg-gray-50"
+      />
+      
+      <Modal
+        title="Chi tiết đơn vận chuyển"
+        open={isDetailModalVisible}
+        onCancel={() => setIsDetailModalVisible(false)}
+        footer={null}
+        width={800}
+      >
+        {selectedShipment && (
+          <div className="space-y-6">
+            {/* Existing shipment info */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h3 className="font-medium">Thông tin vận đơn</h3>
+                <p>Mã vận đơn: {selectedShipment.trackingNumber}</p>
+                <p>Trạng thái: 
+                  <Tag color={getStatusColor(selectedShipment.status)} className="ml-2">
+                    {selectedShipment.status}
+                  </Tag>
+                </p>
+                <p>Phí vận chuyển: {selectedShipment.shippingFee.toLocaleString('vi-VN')}đ</p>
+              </div>
+              
+              <div>
+                <h3 className="font-medium">Thông tin người nhận</h3>
+                <p>Tên: {selectedShipment.recipientName}</p>
+                <p>Số điện thoại: {selectedShipment.recipientPhone}</p>
+                <p>Địa chỉ: {selectedShipment.shippingAddress}</p>
+              </div>
+            </div>
+
+            {/* New Order Items Section */}
+            <div className="border-t pt-4">
+              <h3 className="font-medium mb-3">Danh sách sản phẩm</h3>
+              <div className="overflow-x-auto">
+                {loadingOrderItems ? (
+                  <div className="text-center py-4">
+                    <Spin tip="Đang tải danh sách sản phẩm..." />
+                  </div>
+                ) : selectedShipment?.orderItems && selectedShipment.orderItems.length > 0 ? (
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left">Sản phẩm</th>
+                        <th className="px-4 py-2 text-center">Mã SKU</th>
+                        <th className="px-4 py-2 text-center">Số lượng</th>
+                        <th className="px-4 py-2 text-right">Đơn giá</th>
+                        <th className="px-4 py-2 text-right">Thành tiền</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {selectedShipment.orderItems.map((item) => (
+                        <tr key={item.id}>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center">
+                              {item.productImage && (
+                                <img 
+                                  src={item.productImage} 
+                                  alt={item.productName}
+                                  className="w-12 h-12 object-cover rounded mr-3"
+                                />
+                              )}
+                              <span>{item.productName}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-center">{item.sku || '-'}</td>
+                          <td className="px-4 py-3 text-center">{item.quantity}</td>
+                          <td className="px-4 py-3 text-right">
+                            {item.price.toLocaleString('vi-VN')}đ
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            {(item.price * item.quantity).toLocaleString('vi-VN')}đ
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-gray-50">
+                      <tr>
+                        <td colSpan={4} className="px-4 py-3 text-right font-medium">
+                          Tổng giá trị đơn hàng:
+                        </td>
+                        <td className="px-4 py-3 text-right font-medium text-red-600">
+                          {(selectedShipment.totalAmount || 0).toLocaleString('vi-VN')}đ
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                ) : (
+                  <div className="text-center py-4 text-gray-500">
+                    Không có sản phẩm nào
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Existing notes and time sections */}
+            <div>
+              <h3 className="font-medium">Ghi chú</h3>
+              <p>{selectedShipment.notes || 'Không có ghi chú'}</p>
+            </div>
+
+            <div>
+              <h3 className="font-medium">Thời gian</h3>
+              <p>Ngày tạo: {dayjs(selectedShipment.createdAt).format('DD/MM/YYYY HH:mm')}</p>
+              <p>Cập nhật lần cuối: {selectedShipment.updatedAt ? dayjs(selectedShipment.updatedAt).format('DD/MM/YYYY HH:mm') : '-'}</p>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </div>
   );
 };
 

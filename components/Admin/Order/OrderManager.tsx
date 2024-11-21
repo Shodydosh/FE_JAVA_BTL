@@ -149,11 +149,11 @@ const OrderManager: React.FC<OrderManagerProps> = ({ ordersData }) => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PENDING': return 'gold';
-      case 'APPROVED': return 'blue';
-      case 'COMPLETED': return 'green';
-      case 'CANCELLED': return 'red';
-      default: return 'default';
+      case 'PENDING': return { color: '#d97706', bg: '#fef3c7' };
+      case 'APPROVED': return { color: '#2563eb', bg: '#dbeafe' };
+      case 'COMPLETED': return { color: '#059669', bg: '#d1fae5' };
+      case 'CANCELLED': return { color: '#dc2626', bg: '#fee2e2' };
+      default: return { color: '#6b7280', bg: '#f3f4f6' };
     }
   };
 
@@ -226,147 +226,220 @@ const OrderManager: React.FC<OrderManagerProps> = ({ ordersData }) => {
   };
 
   const styles = {
+    container: {
+      padding: '24px',
+      background: '#ffffff',
+      borderRadius: '12px',
+      boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+    },
     table: {
       '.ant-table': {
-        borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
       },
       '.ant-table-thead > tr > th': {
-        backgroundColor: '#f7f7f7',
+        backgroundColor: '#f8fafc',
+        color: '#1f2937',
         fontWeight: 600,
-      }
+        fontSize: '14px',
+        padding: '16px 12px',
+      },
+      '.ant-table-tbody > tr > td': {
+        padding: '16px 12px',
+        fontSize: '14px',
+      },
+      '.ant-table-tbody > tr:hover > td': {
+        backgroundColor: '#f8fafc',
+      },
     },
     actionButton: {
-      borderRadius: '6px',
+      borderRadius: '8px',
       display: 'flex',
       alignItems: 'center',
-      gap: '4px'
+      gap: '4px',
+      padding: '4px 12px',
+      transition: 'all 0.3s ease',
     },
     modalContent: {
       orderInfo: {
-        marginBottom: 24,
-        borderBottom: '1px solid #f0f0f0',
-        padding: '16px 0'
+        marginBottom: '28px',
+        borderBottom: '1px solid #e5e7eb',
+        padding: '20px 0',
       },
       grid: {
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
-        gap: 16,
-        marginBottom: 16
+        gap: '24px',
+        marginBottom: '20px',
       },
       note: {
-        padding: '12px',
-        backgroundColor: '#f5f5f5',
-        borderRadius: '6px',
-        marginTop: '8px'
+        padding: '16px',
+        backgroundColor: '#f8fafc',
+        borderRadius: '8px',
+        marginTop: '12px',
+        border: '1px solid #e5e7eb',
       },
       section: {
-        marginBottom: '24px'
-      }
-    }
+        marginBottom: '32px',
+        '& h4': {
+          fontSize: '16px',
+          fontWeight: 600,
+          color: '#1f2937',
+          marginBottom: '16px',
+        },
+      },
+      label: {
+        color: '#6b7280',
+        fontWeight: 500,
+        marginBottom: '4px',
+      },
+      value: {
+        color: '#1f2937',
+        fontSize: '14px',
+      },
+    },
   };
 
   const ActionButtons: React.FC<{ record: Order }> = ({ record }) => (
-    <Space size="small">
+    <Space size="small" className="flex">
       <Tooltip title="Xem chi tiết">
-        <Button 
+        <Button
           type="primary"
+          icon={<EyeOutlined />}
+          className="flex items-center justify-center bg-blue-500 hover:bg-blue-600"
           onClick={() => fetchOrderItems(record.id)}
-          style={styles.actionButton}
-        >
-          <EyeOutlined /> Chi tiết
-        </Button>
+        />
       </Tooltip>
       {record.status === 'PENDING' && (
-        <Button 
-          type="primary"
-          loading={statusLoading === record.id}
-          onClick={() => handleStatusUpdate(record.id, 'APPROVED')}
-          style={styles.actionButton}
-        >
-          <CheckCircleOutlined /> Duyệt
-        </Button>
+        <Tooltip title="Duyệt đơn">
+          <Button
+            type="primary"
+            icon={<CheckCircleOutlined />}
+            loading={statusLoading === record.id}
+            className="flex items-center justify-center bg-green-500 hover:bg-green-600"
+            onClick={() => handleStatusUpdate(record.id, 'APPROVED')}
+          />
+        </Tooltip>
       )}
       {record.status === 'APPROVED' && (
-        <Button 
-          type="primary"
-          style={{ ...styles.actionButton, backgroundColor: '#52c41a' }}
-          loading={statusLoading === record.id}
-          onClick={() => handleStatusUpdate(record.id, 'COMPLETED')}
-        >
-          <CheckCircleOutlined /> Hoàn thành
-        </Button>
+        <Tooltip title="Hoàn thành">
+          <Button 
+            type="primary"
+            style={{ backgroundColor: '#52c41a' }}
+            icon={<CheckCircleOutlined />}
+            loading={statusLoading === record.id}
+            onClick={() => handleStatusUpdate(record.id, 'COMPLETED')}
+          />
+        </Tooltip>
       )}
       {(record.status === 'PENDING' || record.status === 'APPROVED') && (
-        <Button 
-          danger
-          type="primary"
-          loading={statusLoading === record.id}
-          onClick={() => handleStatusUpdate(record.id, 'CANCELLED')}
-          style={styles.actionButton}
-        >
-          <CloseCircleOutlined /> Hủy
-        </Button>
+        <Tooltip title="Hủy đơn">
+          <Button 
+            danger
+            type="primary"
+            icon={<CloseCircleOutlined />}
+            loading={statusLoading === record.id}
+            onClick={() => handleStatusUpdate(record.id, 'CANCELLED')}
+          />
+        </Tooltip>
       )}
     </Space>
   );
 
   const OrderDetailsModal: React.FC = () => (
     <Modal
-      title={<h3>Chi tiết đơn hàng</h3>}
+      title={
+        <div className="flex items-center gap-3 border-b pb-3">
+          <h3 className="text-xl font-semibold text-gray-800 m-0">
+            Chi tiết đơn hàng
+          </h3>
+          {selectedOrder && (
+            <Tag className="m-0" color={getStatusColor(selectedOrder.status).color}>
+              {getStatusLabel(selectedOrder.status)}
+            </Tag>
+          )}
+        </div>
+      }
       open={isModalVisible}
       onCancel={() => setIsModalVisible(false)}
       footer={null}
-      width={800}
+      width={900}
+      className="top-5"
     >
       {selectedOrder && (
-        <>
-          <div style={styles.modalContent.section}>
-            <h4>Thông tin đơn hàng</h4>
-            <div style={styles.modalContent.grid}>
-              <div>
-                <p><strong>Mã đơn hàng:</strong> {selectedOrder.id}</p>
-                <p><strong>Khách hàng:</strong> {selectedOrder.customerName}</p>
-                <p><strong>Số điện thoại:</strong> {selectedOrder.phoneNumber}</p>
-                <p><strong>Địa chỉ:</strong> {selectedOrder.shippingAddress}</p>
+        <div className="p-4">
+          <div className="bg-gray-50 rounded-lg p-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <div>
+                  <span className="text-gray-500">Mã đơn hàng</span>
+                  <p className="font-medium">{selectedOrder.id}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Khách hàng</span>
+                  <p className="font-medium">{selectedOrder.customerName}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Số điện thoại</span>
+                  <p className="font-medium">{selectedOrder.phoneNumber}</p>
+                </div>
               </div>
-              <div>
-                <p><strong>Ngày tạo:</strong> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
-                <p><strong>Thanh toán:</strong> {selectedOrder.paymentMethod}</p>
-                {selectedOrder.cardNumber && <p><strong>Số thẻ:</strong> {selectedOrder.cardNumber}</p>}
-                {selectedOrder.cardHolder && <p><strong>Chủ thẻ:</strong> {selectedOrder.cardHolder}</p>}
-                {renderOrderStatus(selectedOrder.status)}
+              <div className="space-y-3">
+                <div>
+                  <span className="text-gray-500">Ngày tạo</span>
+                  <p className="font-medium">
+                    {new Date(selectedOrder.createdAt).toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Phương thức thanh toán</span>
+                  <p className="font-medium">{selectedOrder.paymentMethod}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Tổng tiền</span>
+                  <p className="font-medium text-green-600">
+                    {selectedOrder.totalAmount.toLocaleString('vi-VN')}đ
+                  </p>
+                </div>
               </div>
             </div>
+            <div className="mt-4">
+              <span className="text-gray-500">Địa chỉ giao hàng</span>
+              <p className="font-medium">{selectedOrder.shippingAddress}</p>
+            </div>
             {selectedOrder.note && (
-              <div style={styles.modalContent.note}>
-                <strong>Ghi chú:</strong> {selectedOrder.note}
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                <span className="text-gray-500">Ghi chú</span>
+                <p className="font-medium text-gray-700">{selectedOrder.note}</p>
               </div>
             )}
           </div>
-          <div style={styles.modalContent.section}>
-            <h4>Chi tiết sản phẩm</h4>
+
+          <div className="rounded-lg border border-gray-200">
             <Table
               columns={orderItemColumns}
               dataSource={selectedOrderItems}
               rowKey="id"
               loading={loading}
               pagination={false}
+              className="rounded-lg overflow-hidden"
               summary={() => (
                 <Table.Summary fixed>
-                  <Table.Summary.Row>
+                  <Table.Summary.Row className="bg-gray-50">
                     <Table.Summary.Cell index={0} colSpan={4}>
                       <strong>Tổng tiền:</strong>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={1}>
-                      <strong>{calculateTotal(selectedOrderItems).toLocaleString('vi-VN')}đ</strong>
+                      <strong className="text-green-600">
+                        {calculateTotal(selectedOrderItems).toLocaleString('vi-VN')}đ
+                      </strong>
                     </Table.Summary.Cell>
                   </Table.Summary.Row>
                 </Table.Summary>
               )}
             />
           </div>
-        </>
+        </div>
       )}
     </Modal>
   );
@@ -456,11 +529,20 @@ const OrderManager: React.FC<OrderManagerProps> = ({ ordersData }) => {
         { text: 'Đã hủy', value: 'CANCELLED' },
       ],
       onFilter: (value: string, record) => record.status === value,
-      render: (status: string) => (
-        <Tag color={getStatusColor(status)}>
-          {getStatusLabel(status)}
-        </Tag>
-      ),
+      render: (status: string) => {
+        const { color, bg } = getStatusColor(status);
+        return (
+          <Tag 
+            className={`px-3 py-1 rounded-full text-sm font-medium border-none`}
+            style={{ 
+              color: color,
+              backgroundColor: bg,
+            }}
+          >
+            {getStatusLabel(status)}
+          </Tag>
+        );
+      },
     },
     {
       title: 'Thao tác',
@@ -526,21 +608,26 @@ const OrderManager: React.FC<OrderManagerProps> = ({ ordersData }) => {
   );
 
   return (
-    <>
+    <div className="bg-white rounded-lg shadow-sm p-6">
       <Table 
         columns={columns} 
         dataSource={ordersData} 
         rowKey="id"
         scroll={{ x: 1200 }}
-        style={styles.table}
+        className="rounded-lg overflow-hidden"
         pagination={{
           defaultPageSize: 10,
           showSizeChanger: true,
-          showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} đơn hàng`
+          showTotal: (total, range) => (
+            <span className="text-gray-600">
+              Hiển thị {range[0]}-{range[1]} của {total} đơn hàng
+            </span>
+          ),
+          className: "mt-4"
         }}
       />
       <OrderDetailsModal />
-    </>
+    </div>
   );
 };
 
