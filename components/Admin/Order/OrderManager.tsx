@@ -225,23 +225,151 @@ const OrderManager: React.FC<OrderManagerProps> = ({ ordersData }) => {
     }
   };
 
-  const tableStyle = {
-    '.ant-table': {
-      borderRadius: '8px',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+  const styles = {
+    table: {
+      '.ant-table': {
+        borderRadius: '8px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      },
+      '.ant-table-thead > tr > th': {
+        backgroundColor: '#f7f7f7',
+        fontWeight: 600,
+      }
     },
-    '.ant-table-thead > tr > th': {
-      backgroundColor: '#f7f7f7',
-      fontWeight: 600,
+    actionButton: {
+      borderRadius: '6px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '4px'
     },
-    '.ant-table-tbody > tr:hover > td': {
-      backgroundColor: '#f5f5f5',
-    },
-    '.ant-table-row': {
-      cursor: 'pointer',
-      transition: 'all 0.3s',
-    },
+    modalContent: {
+      orderInfo: {
+        marginBottom: 24,
+        borderBottom: '1px solid #f0f0f0',
+        padding: '16px 0'
+      },
+      grid: {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 16,
+        marginBottom: 16
+      },
+      note: {
+        padding: '12px',
+        backgroundColor: '#f5f5f5',
+        borderRadius: '6px',
+        marginTop: '8px'
+      },
+      section: {
+        marginBottom: '24px'
+      }
+    }
   };
+
+  const ActionButtons: React.FC<{ record: Order }> = ({ record }) => (
+    <Space size="small">
+      <Tooltip title="Xem chi tiết">
+        <Button 
+          type="primary"
+          onClick={() => fetchOrderItems(record.id)}
+          style={styles.actionButton}
+        >
+          <EyeOutlined /> Chi tiết
+        </Button>
+      </Tooltip>
+      {record.status === 'PENDING' && (
+        <Button 
+          type="primary"
+          loading={statusLoading === record.id}
+          onClick={() => handleStatusUpdate(record.id, 'APPROVED')}
+          style={styles.actionButton}
+        >
+          <CheckCircleOutlined /> Duyệt
+        </Button>
+      )}
+      {record.status === 'APPROVED' && (
+        <Button 
+          type="primary"
+          style={{ ...styles.actionButton, backgroundColor: '#52c41a' }}
+          loading={statusLoading === record.id}
+          onClick={() => handleStatusUpdate(record.id, 'COMPLETED')}
+        >
+          <CheckCircleOutlined /> Hoàn thành
+        </Button>
+      )}
+      {(record.status === 'PENDING' || record.status === 'APPROVED') && (
+        <Button 
+          danger
+          type="primary"
+          loading={statusLoading === record.id}
+          onClick={() => handleStatusUpdate(record.id, 'CANCELLED')}
+          style={styles.actionButton}
+        >
+          <CloseCircleOutlined /> Hủy
+        </Button>
+      )}
+    </Space>
+  );
+
+  const OrderDetailsModal: React.FC = () => (
+    <Modal
+      title={<h3>Chi tiết đơn hàng</h3>}
+      open={isModalVisible}
+      onCancel={() => setIsModalVisible(false)}
+      footer={null}
+      width={800}
+    >
+      {selectedOrder && (
+        <>
+          <div style={styles.modalContent.section}>
+            <h4>Thông tin đơn hàng</h4>
+            <div style={styles.modalContent.grid}>
+              <div>
+                <p><strong>Mã đơn hàng:</strong> {selectedOrder.id}</p>
+                <p><strong>Khách hàng:</strong> {selectedOrder.customerName}</p>
+                <p><strong>Số điện thoại:</strong> {selectedOrder.phoneNumber}</p>
+                <p><strong>Địa chỉ:</strong> {selectedOrder.shippingAddress}</p>
+              </div>
+              <div>
+                <p><strong>Ngày tạo:</strong> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
+                <p><strong>Thanh toán:</strong> {selectedOrder.paymentMethod}</p>
+                {selectedOrder.cardNumber && <p><strong>Số thẻ:</strong> {selectedOrder.cardNumber}</p>}
+                {selectedOrder.cardHolder && <p><strong>Chủ thẻ:</strong> {selectedOrder.cardHolder}</p>}
+                {renderOrderStatus(selectedOrder.status)}
+              </div>
+            </div>
+            {selectedOrder.note && (
+              <div style={styles.modalContent.note}>
+                <strong>Ghi chú:</strong> {selectedOrder.note}
+              </div>
+            )}
+          </div>
+          <div style={styles.modalContent.section}>
+            <h4>Chi tiết sản phẩm</h4>
+            <Table
+              columns={orderItemColumns}
+              dataSource={selectedOrderItems}
+              rowKey="id"
+              loading={loading}
+              pagination={false}
+              summary={() => (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell index={0} colSpan={4}>
+                      <strong>Tổng tiền:</strong>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={1}>
+                      <strong>{calculateTotal(selectedOrderItems).toLocaleString('vi-VN')}đ</strong>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )}
+            />
+          </div>
+        </>
+      )}
+    </Modal>
+  );
 
   const columns: ColumnsType<Order> = [
     {
@@ -339,61 +467,7 @@ const OrderManager: React.FC<OrderManagerProps> = ({ ordersData }) => {
       key: 'action',
       fixed: 'right',
       width: 150,
-      render: (_, record: Order) => (
-        <Space>
-          <Tooltip title="Xem chi tiết">
-            <Button 
-              type="primary"
-              icon={<EyeOutlined />}
-              onClick={() => fetchOrderItems(record.id)}
-              size="middle"
-              style={{ 
-                borderRadius: '4px',
-                backgroundColor: '#1890ff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              Chi tiết
-            </Button>
-          </Tooltip>
-          {record.status === 'PENDING' && (
-            <Button 
-              type="primary"
-              loading={statusLoading === record.id}
-              onClick={() => handleStatusUpdate(record.id, 'APPROVED')}
-              style={{ borderRadius: '4px' }}
-              icon={<CheckCircleOutlined />}
-            >
-              Duyệt
-            </Button>
-          )}
-          {record.status === 'APPROVED' && (
-            <Button 
-              type="primary"
-              style={{ backgroundColor: '#52c41a', borderRadius: '4px' }}
-              loading={statusLoading === record.id}
-              onClick={() => handleStatusUpdate(record.id, 'COMPLETED')}
-              icon={<CheckCircleOutlined />}
-            >
-              Hoàn thành
-            </Button>
-          )}
-          {(record.status === 'PENDING' || record.status === 'APPROVED') && (
-            <Button 
-              danger
-              type="primary"
-              loading={statusLoading === record.id}
-              onClick={() => handleStatusUpdate(record.id, 'CANCELLED')}
-              style={{ borderRadius: '4px' }}
-              icon={<CloseCircleOutlined />}
-            >
-              Hủy
-            </Button>
-          )}
-        </Space>
-      ),
+      render: (_, record: Order) => <ActionButtons record={record} />,
     },
   ];
 
@@ -457,80 +531,15 @@ const OrderManager: React.FC<OrderManagerProps> = ({ ordersData }) => {
         columns={columns} 
         dataSource={ordersData} 
         rowKey="id"
-        scroll={{ x: 1500 }}
-        style={tableStyle}
+        scroll={{ x: 1200 }}
+        style={styles.table}
         pagination={{
           defaultPageSize: 10,
           showSizeChanger: true,
-          showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} đơn hàng`,
-          style: { marginBottom: 16 }
+          showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} đơn hàng`
         }}
       />
-      <Modal
-        title="Chi tiết đơn hàng"
-        open={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        footer={null}
-        width={1000}
-        okText="Xác nhận"
-        cancelText="Hủy"
-      >
-        {selectedOrder && (
-          <div style={{ marginBottom: 24 }}>
-            <h3 style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: 8, marginBottom: 16 }}>
-              Thông tin đơn hàng
-            </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <div>
-                <p><strong>Mã đơn hàng:</strong> {selectedOrder.id}</p>
-                <p><strong>Khách hàng:</strong> {selectedOrder.customerName}</p>
-                <p><strong>Số điện thoại:</strong> {selectedOrder.phoneNumber}</p>
-                <p><strong>Địa chỉ:</strong> {selectedOrder.shippingAddress}</p>
-              </div>
-              <div>
-                <p><strong>Ngày tạo:</strong> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
-                <p><strong>Phương thức thanh toán:</strong> {selectedOrder.paymentMethod}</p>
-                {selectedOrder.cardNumber && (
-                  <p><strong>Số thẻ:</strong> {selectedOrder.cardNumber}</p>
-                )}
-                {selectedOrder.cardHolder && (
-                  <p><strong>Chủ thẻ:</strong> {selectedOrder.cardHolder}</p>
-                )}
-                {renderOrderStatus(selectedOrder.status)}
-              </div>
-            </div>
-            {selectedOrder.note && (
-              <div style={{ marginTop: 16 }}>
-                <p><strong>Ghi chú:</strong></p>
-                <p style={{ padding: 8, backgroundColor: '#f5f5f5', borderRadius: 4 }}>
-                  {selectedOrder.note}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-        <h3 style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: 8, marginBottom: 16 }}>
-          Chi tiết sản phẩm
-        </h3>
-        <Table
-          columns={orderItemColumns}
-          dataSource={selectedOrderItems}
-          rowKey="id"
-          loading={loading}
-          summary={() => (
-            <Table.Summary fixed>
-              <Table.Summary.Row>
-                <Table.Summary.Cell index={0} colSpan={3}>
-                  <strong>Tổng tiền</strong>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={1}>
-                  <strong>{calculateTotal(selectedOrderItems).toLocaleString('vi-VN')}đ</strong>
-                </Table.Summary.Cell>
-              </Table.Summary.Row>
-            </Table.Summary>
-          )}
-        />
-      </Modal>
+      <OrderDetailsModal />
     </>
   );
 };

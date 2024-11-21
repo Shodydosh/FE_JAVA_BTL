@@ -1,7 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Table, Typography, Tag, Button, Modal, message, Timeline, Skeleton, Space } from 'antd';
+import {
+    Table,
+    Typography,
+    Tag,
+    Button,
+    Modal,
+    message,
+    Timeline,
+    Skeleton,
+    Space,
+} from 'antd';
 import { EyeOutlined, CarOutlined } from '@ant-design/icons';
 import Header from '../../components/Core/Header';
 const { Title } = Typography;
@@ -48,7 +58,14 @@ interface Shipment {
     shippingAddress: string;
     notes: string;
     shippingFee: number;
-    status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPING' | 'DELIVERED' | 'CANCELLED' | 'RETURNED';
+    status:
+        | 'PENDING'
+        | 'CONFIRMED'
+        | 'PROCESSING'
+        | 'SHIPPING'
+        | 'DELIVERED'
+        | 'CANCELLED'
+        | 'RETURNED';
     createdAt: string;
     updatedAt: string;
 }
@@ -56,7 +73,9 @@ interface Shipment {
 const OrderHistory = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [selectedOrderItems, setSelectedOrderItems] = useState<OrderItem[]>([]);
+    const [selectedOrderItems, setSelectedOrderItems] = useState<OrderItem[]>(
+        [],
+    );
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
     const [modalLoading, setModalLoading] = useState(false);
@@ -71,15 +90,19 @@ const OrderHistory = () => {
     const fetchOrders = async () => {
         setLoading(true);
         try {
-            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            const userData = JSON.parse(
+                localStorage.getItem('userData') || '{}',
+            );
             const userId = userData.id;
             console.log('userId:', userId);
-        
+
             if (!userId) {
                 message.error('Vui lòng đăng nhập để xem lịch sử đơn hàng');
                 return;
             }
-            const response = await fetch(`http://localhost:8080/api/orders/user/${userId}`);
+            const response = await fetch(
+                `http://localhost:8080/api/orders/user/${userId}`,
+            );
             if (response.ok) {
                 const data = await response.json();
                 setOrders(data);
@@ -96,10 +119,12 @@ const OrderHistory = () => {
     const fetchOrderItems = async (orderId: string) => {
         setModalLoading(true);
         try {
-            const order = orders.find(o => o.id === orderId);
+            const order = orders.find((o) => o.id === orderId);
             setSelectedOrder(order || null);
 
-            const response = await fetch(`http://localhost:8080/api/orderItems/order/${orderId}`);
+            const response = await fetch(
+                `http://localhost:8080/api/orderItems/order/${orderId}`,
+            );
             if (response.ok) {
                 const items = await response.json();
                 setSelectedOrderItems(items);
@@ -117,7 +142,9 @@ const OrderHistory = () => {
     const fetchShipmentDetails = async (orderId: string) => {
         setShipmentLoading(true);
         try {
-            const response = await fetch(`http://localhost:8080/api/shipments/order/${orderId}`);
+            const response = await fetch(
+                `http://localhost:8080/api/shipments/order/${orderId}`,
+            );
             if (response.ok) {
                 const shipments = await response.json();
                 setSelectedShipments(shipments);
@@ -165,8 +192,9 @@ const OrderHistory = () => {
             dataIndex: 'createdAt',
             key: 'createdAt',
             render: (date: string) => new Date(date).toLocaleDateString(),
-            sorter: (a: Order, b: Order) => 
-                new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+            sorter: (a: Order, b: Order) =>
+                new Date(a.createdAt).getTime() -
+                new Date(b.createdAt).getTime(),
         },
         {
             title: 'Tổng tiền',
@@ -180,15 +208,27 @@ const OrderHistory = () => {
             dataIndex: 'status',
             key: 'status',
             render: (status: string) => {
-                const color = 
-                    status === 'COMPLETED' ? 'green' :
-                    status === 'PENDING' ? 'gold' :
-                    status === 'CANCELLED' ? 'red' : 'blue';
+                const color =
+                    status === 'COMPLETED'
+                        ? 'green'
+                        : status === 'PENDING'
+                        ? 'gold'
+                        : status == 'APPROVED'
+                        ? 'cyan'
+                        : status === 'CANCELLED'
+                        ? 'red'
+                        : 'blue';
                 return (
                     <Tag color={color}>
-                        {status === 'COMPLETED' ? 'Hoàn thành' :
-                         status === 'PENDING' ? 'Chờ xử lý' :
-                         status === 'CANCELLED' ? 'Đã hủy' : status}
+                        {status === 'COMPLETED'
+                            ? 'Hoàn thành'
+                            : status === 'PENDING'
+                            ? 'Chờ xử lý'
+                            : status === 'APPROVED'
+                            ? 'Đã duyệt'
+                            : status === 'CANCELLED'
+                            ? 'Đã hủy'
+                            : status}
                     </Tag>
                 );
             },
@@ -234,7 +274,7 @@ const OrderHistory = () => {
                     )}
                 </>
             ),
-        }
+        },
     ];
 
     const orderItemColumns = [
@@ -243,10 +283,14 @@ const OrderHistory = () => {
             dataIndex: ['product', 'img_url'],
             key: 'image',
             render: (img_url: string) => (
-                <img 
-                    src={img_url} 
-                    alt="Sản phẩm" 
-                    style={{ width: '50px', height: '50px', objectFit: 'cover' }} 
+                <img
+                    src={img_url}
+                    alt="Sản phẩm"
+                    style={{
+                        width: '50px',
+                        height: '50px',
+                        objectFit: 'cover',
+                    }}
                 />
             ),
         },
@@ -269,7 +313,8 @@ const OrderHistory = () => {
         {
             title: 'Thành tiền',
             key: 'total',
-            render: (record: OrderItem) => `${(record.price * record.quantity).toLocaleString('vi-VN')}₫`,
+            render: (record: OrderItem) =>
+                `${(record.price * record.quantity).toLocaleString('vi-VN')}₫`,
         },
     ];
 
