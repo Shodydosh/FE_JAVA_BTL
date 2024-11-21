@@ -70,7 +70,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ productsData }) => {
                 },
                 {
                     text: 'Quần áo',
-                    value: 'clothes',
+                    value: 'clothing',
                 },
             ],
             onFilter: (value: React.Key | boolean, record: ProductProps) =>
@@ -85,8 +85,10 @@ const ProductManager: React.FC<ProductManagerProps> = ({ productsData }) => {
                     <Tag color="orange">Laptop</Tag>
                 ) : category === 'book' ? (
                     <Tag color="blue">Sách</Tag>
-                ) : (
+                ) : category === 'clothing'?(
                     <Tag color="green">Quần áo</Tag>
+                ) : (
+                    <Tag color="red">Khác</Tag>
                 ),
         },
         {
