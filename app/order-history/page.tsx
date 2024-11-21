@@ -73,6 +73,7 @@ const OrderHistory = () => {
         try {
             const userData = JSON.parse(localStorage.getItem('userData') || '{}');
             const userId = userData.id;
+            console.log('userId:', userId);
         
             if (!userId) {
                 message.error('Vui lòng đăng nhập để xem lịch sử đơn hàng');

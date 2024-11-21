@@ -65,10 +65,23 @@ const Header = () => {
         router.push('/cart');
     };
 
+    const [hasUserId, setHasUserId] = useState(false);
+
+    useEffect(() => {
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        const userIdFromStorage = userData.id;
+        if (userIdFromStorage) {
+            setHasUserId(true);
+        }
+    }, []);
+
     const logoutHandler = () => {
         localStorage.removeItem('token');
-        mutate(null);
-        message.success('Log out succesfully!');
+        localStorage.removeItem('userData'); // Sửa từ 'userId' thành 'userData'
+        mutate(null);   
+        setHasUserId(false);
+        setHasUserId(false);
+        message.success('Log out successfully!');
     };
 
     return (
@@ -123,7 +136,7 @@ const Header = () => {
                     </Badge>
 
                     <div className="ml-2">
-                        {!isLoggedIn ? (
+                        {!hasUserId ? (
                             <Link href="/login" scroll={false}>
                                 <Button type="primary">
                                     Login
@@ -151,6 +164,7 @@ const Header = () => {
                                 <Avatar className="cursor-pointer bg-primary">U</Avatar>
                             </Dropdown>
                         )}
+
                     </div>
                 </div>
             </div>
@@ -159,3 +173,4 @@ const Header = () => {
 };
 
 export default Header;
+
