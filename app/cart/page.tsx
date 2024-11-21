@@ -2,12 +2,50 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import CartDetailItem from './_components/CartDetailItem';
-import { Button, Modal, Form, Input, notification, Spin, Card, List, Skeleton, Typography, Space, Divider } from 'antd';
-import { ShoppingCartOutlined, DeleteOutlined, ShoppingOutlined } from '@ant-design/icons';
+import {
+    Button,
+    Modal,
+    Form,
+    Input,
+    notification,
+    Spin,
+    Card,
+    List,
+    Skeleton,
+    Typography,
+    Space,
+    Divider,
+} from 'antd';
+import {
+    ShoppingCartOutlined,
+    DeleteOutlined,
+    ShoppingOutlined,
+} from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Core/Header';
 
 // ...existing interfaces...
+
+interface OrderData {
+    items: {
+        productId: string;
+        quantity: number;
+        price: number;
+    }[];
+    totalAmount: number;
+    phoneNumber: string;
+    shippingAddress: string;
+    customerName: string;
+    note?: string;
+}
+
+interface CartItem {
+    id: string;
+    name: string;
+    price: number;
+    img_url: string;
+    quantity: number;
+}
 
 const { Title, Text } = Typography;
 
@@ -28,7 +66,7 @@ const CartPage: React.FC = () => {
                 `http://localhost:8080/api/cart/user/${userId}`,
                 {
                     credentials: 'include',
-                }
+                },
             );
             if (!response.ok) {
                 throw new Error('Failed to fetch cart');
@@ -58,19 +96,27 @@ const CartPage: React.FC = () => {
                 }
 
                 // Lấy userData sau khi đã verify token
-                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                const userData = JSON.parse(
+                    localStorage.getItem('userData') || '{}',
+                );
                 if (!userData.id) {
                     // Nếu không có userData nhưng có token, thử fetch lại thông tin user
                     try {
-                        const userResponse = await fetch('http://localhost:8080/api/user/profile', {
-                            headers: {
-                                'Authorization': `Bearer ${token}`
+                        const userResponse = await fetch(
+                            'http://localhost:8080/api/user/profile',
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                                credentials: 'include',
                             },
-                            credentials: 'include'
-                        });
+                        );
                         if (userResponse.ok) {
                             const userData = await userResponse.json();
-                            localStorage.setItem('userData', JSON.stringify(userData));
+                            localStorage.setItem(
+                                'userData',
+                                JSON.stringify(userData),
+                            );
                         } else {
                             // Nếu không lấy được thông tin user, xóa token và redirect
                             localStorage.removeItem('token');
@@ -91,14 +137,14 @@ const CartPage: React.FC = () => {
                     setIsLoading(false);
                     return;
                 }
-                
+
                 setCartId(cartId);
 
                 const response = await fetch(
                     `http://localhost:8080/api/cartitems/${cartId}`,
                     {
                         credentials: 'include',
-                    }
+                    },
                 );
                 if (!response.ok) {
                     throw new Error('Failed to fetch cart items');
@@ -109,7 +155,7 @@ const CartPage: React.FC = () => {
                 console.error('Error fetching cart data:', error);
                 notification.error({
                     message: 'Lỗi',
-                    description: 'Không thể tải thông tin giỏ hàng'
+                    description: 'Không thể tải thông tin giỏ hàng',
                 });
             } finally {
                 setIsLoading(false);
@@ -120,31 +166,38 @@ const CartPage: React.FC = () => {
     }, [router]);
 
     const groupedCartItems = useMemo(() => {
-        const grouped = cartItems.reduce((acc, item) => {
-            const key = item.id;
-            if (!acc[key]) {
-                acc[key] = {
-                    ...item,
-                    quantity: 1
-                };
-            } else {
-                acc[key].quantity += 1;
-            }
-            return acc;
-        }, {} as Record<string, CartItem & { quantity: number }>);
-        
+        const grouped = cartItems.reduce(
+            (acc, item) => {
+                const key = item.id;
+                if (!acc[key]) {
+                    acc[key] = {
+                        ...item,
+                        quantity: 1,
+                    };
+                } else {
+                    acc[key].quantity += 1;
+                }
+                return acc;
+            },
+            {} as Record<string, CartItem & { quantity: number }>,
+        );
+
         return Object.values(grouped);
     }, [cartItems]);
 
     const calcTotalPrice = useMemo(() => {
-        return groupedCartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+        return groupedCartItems.reduce(
+            (total, item) => total + item.price * item.quantity,
+            0,
+        );
     }, [groupedCartItems]);
 
     const calcTotalQuantity = useMemo(() => {
-        return groupedCartItems.reduce((total, item) => total + item.quantity, 0);
+        return groupedCartItems.reduce(
+            (total, item) => total + item.quantity,
+            0,
+        );
     }, [groupedCartItems]);
-
-   
 
     const removeHandler = async (id: string) => {
         try {
@@ -155,7 +208,7 @@ const CartPage: React.FC = () => {
                 {
                     method: 'DELETE',
                     credentials: 'include',
-                }
+                },
             );
             if (!response.ok) {
                 throw new Error('Failed to delete cart item');
@@ -168,19 +221,21 @@ const CartPage: React.FC = () => {
     };
 
     const handleQuantityChange = (newQuantity: number, itemId: string) => {
-        setCartItems(prevItems => {
-            const targetItem = prevItems.find(item => item.id === itemId);
+        setCartItems((prevItems) => {
+            const targetItem = prevItems.find((item) => item.id === itemId);
             if (!targetItem) return prevItems;
 
             // Remove all instances of this item
-            const filteredItems = prevItems.filter(item => item.id !== itemId);
-            
+            const filteredItems = prevItems.filter(
+                (item) => item.id !== itemId,
+            );
+
             // Add back the correct number of instances
             const newItems = [...filteredItems];
             for (let i = 0; i < newQuantity; i++) {
                 newItems.push({ ...targetItem });
             }
-            
+
             return newItems;
         });
     };
@@ -193,27 +248,27 @@ const CartPage: React.FC = () => {
         try {
             setIsSubmitting(true);
             const values = await form.validateFields();
-            
+
             const orderData: OrderData = {
-                items: groupedCartItems.map(item => ({
+                items: groupedCartItems.map((item) => ({
                     productId: item.id,
                     quantity: item.quantity,
-                    price: item.price
+                    price: item.price,
                 })),
                 totalAmount: calcTotalPrice,
                 phoneNumber: values.phone,
                 shippingAddress: values.address,
                 customerName: values.fullName,
-                note: values.note // Thêm note vào đây
+                note: values.note, // Thêm note vào đây
             };
 
             localStorage.setItem('pendingOrder', JSON.stringify(orderData));
             router.push('/payment');
-            
         } catch (error) {
             notification.error({
                 message: 'Lỗi',
-                description: error instanceof Error ? error.message : 'Có lỗi xảy ra'
+                description:
+                    error instanceof Error ? error.message : 'Có lỗi xảy ra',
             });
         } finally {
             setIsSubmitting(false);
@@ -249,12 +304,12 @@ const CartPage: React.FC = () => {
                 <div className="min-h-screen bg-gray-50 py-8">
                     <div className="mx-auto max-w-7xl px-4">
                         <Card className="text-center">
-                            <ShoppingCartOutlined className="text-6xl text-gray-300 mb-4" />
+                            <ShoppingCartOutlined className="mb-4 text-6xl text-gray-300" />
                             <Title level={3}>Giỏ hàng trống</Title>
-                            <Text className="block mb-6 text-gray-500">
+                            <Text className="mb-6 block text-gray-500">
                                 Hãy thêm sản phẩm vào giỏ hàng của bạn
                             </Text>
-                            <Button 
+                            <Button
                                 type="primary"
                                 size="large"
                                 icon={<ShoppingOutlined />}
@@ -274,7 +329,7 @@ const CartPage: React.FC = () => {
             <Header />
             <div className="min-h-screen bg-gray-50 py-8">
                 <div className="mx-auto max-w-7xl px-4">
-                    <Space direction="vertical" className="w-full mb-6">
+                    <Space direction="vertical" className="mb-6 w-full">
                         <Title level={2}>Giỏ hàng</Title>
                         <Text className="text-gray-500">
                             Trang chủ / Giỏ hàng
@@ -286,7 +341,7 @@ const CartPage: React.FC = () => {
                             <Card className="mb-4 lg:mb-0">
                                 <List
                                     header={
-                                        <div className="flex justify-between items-center">
+                                        <div className="flex items-center justify-between">
                                             <Title level={4} className="mb-0">
                                                 Sản phẩm ({calcTotalQuantity})
                                             </Title>
@@ -301,7 +356,12 @@ const CartPage: React.FC = () => {
                                             <CartDetailItem
                                                 cart={item}
                                                 onRemove={removeHandler}
-                                                onQuantityChange={(qty) => handleQuantityChange(qty, item.id)}
+                                                onQuantityChange={(qty) =>
+                                                    handleQuantityChange(
+                                                        qty,
+                                                        item.id,
+                                                    )
+                                                }
                                             />
                                         </List.Item>
                                     )}
@@ -312,23 +372,27 @@ const CartPage: React.FC = () => {
                         <div className="lg:col-span-4">
                             <Card className="sticky top-4">
                                 <Title level={4}>Thông tin đơn hàng</Title>
-                                <Space direction="vertical" className="w-full" size="large">
-                                    <div className="flex justify-between items-center">
+                                <Space
+                                    direction="vertical"
+                                    className="w-full"
+                                    size="large"
+                                >
+                                    <div className="flex items-center justify-between">
                                         <Text>Tạm tính</Text>
                                         <Text strong>
                                             {new Intl.NumberFormat('vi-VN', {
                                                 style: 'currency',
-                                                currency: 'VND'
+                                                currency: 'VND',
                                             }).format(calcTotalPrice)}
                                         </Text>
                                     </div>
                                     <Divider style={{ margin: '12px 0' }} />
-                                    <div className="flex justify-between items-center">
+                                    <div className="flex items-center justify-between">
                                         <Text strong>Tổng tiền</Text>
-                                        <Text className="text-xl text-red-600 font-bold">
+                                        <Text className="text-xl font-bold text-red-600">
                                             {new Intl.NumberFormat('vi-VN', {
                                                 style: 'currency',
-                                                currency: 'VND'
+                                                currency: 'VND',
                                             }).format(calcTotalPrice)}
                                         </Text>
                                     </div>
@@ -348,13 +412,13 @@ const CartPage: React.FC = () => {
                 </div>
             </div>
 
-            <Modal 
+            <Modal
                 title={
                     <Title level={4} className="mb-0">
                         Thông tin giao hàng
                     </Title>
                 }
-                open={isModalOpen} 
+                open={isModalOpen}
                 onOk={handleModalOk}
                 onCancel={handleModalCancel}
                 okText="Tiếp tục thanh toán"
@@ -369,13 +433,13 @@ const CartPage: React.FC = () => {
                         <List
                             className="max-h-48 overflow-auto"
                             dataSource={groupedCartItems}
-                            renderItem={item => (
+                            renderItem={(item) => (
                                 <List.Item key={item.id}>
                                     <div className="flex items-center gap-4">
-                                        <img 
-                                            src={item.img_url} 
-                                            alt={item.name} 
-                                            className="w-16 h-16 object-cover rounded"
+                                        <img
+                                            src={item.img_url}
+                                            alt={item.name}
+                                            className="h-16 w-16 rounded object-cover"
                                         />
                                         <div className="flex-1">
                                             <Text strong>{item.name}</Text>
@@ -383,10 +447,15 @@ const CartPage: React.FC = () => {
                                                 Số lượng: {item.quantity}
                                             </div>
                                             <div className="text-sm font-semibold text-blue-600">
-                                                {new Intl.NumberFormat('vi-VN', {
-                                                    style: 'currency',
-                                                    currency: 'VND'
-                                                }).format(item.price * item.quantity)}
+                                                {new Intl.NumberFormat(
+                                                    'vi-VN',
+                                                    {
+                                                        style: 'currency',
+                                                        currency: 'VND',
+                                                    },
+                                                ).format(
+                                                    item.price * item.quantity,
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -396,26 +465,29 @@ const CartPage: React.FC = () => {
                         <Divider />
                         <div className="text-right">
                             <Text strong className="text-lg text-red-600">
-                                Tổng: {new Intl.NumberFormat('vi-VN', {
+                                Tổng:{' '}
+                                {new Intl.NumberFormat('vi-VN', {
                                     style: 'currency',
-                                    currency: 'VND'
+                                    currency: 'VND',
                                 }).format(calcTotalPrice)}
                             </Text>
                         </div>
                     </Card>
-                    
-                    <Form
-                        form={form}
-                        layout="vertical"
-                        className="mt-4"
-                    >
+
+                    <Form form={form} layout="vertical" className="mt-4">
                         <Title level={5}>Thông tin giao hàng</Title>
                         <Form.Item
                             name="fullName"
                             label="Họ và tên"
                             rules={[
-                                { required: true, message: 'Vui lòng nhập họ tên' },
-                                { min: 3, message: 'Họ tên phải có ít nhất 3 ký tự' }
+                                {
+                                    required: true,
+                                    message: 'Vui lòng nhập họ tên',
+                                },
+                                {
+                                    min: 3,
+                                    message: 'Họ tên phải có ít nhất 3 ký tự',
+                                },
                             ]}
                         >
                             <Input placeholder="Nhập họ và tên" />
@@ -424,8 +496,14 @@ const CartPage: React.FC = () => {
                             name="phone"
                             label="Số điện thoại"
                             rules={[
-                                { required: true, message: 'Vui lòng nhập số điện thoại' },
-                                { pattern: /^[0-9]{10}$/, message: 'Số điện thoại không hợp lệ' }
+                                {
+                                    required: true,
+                                    message: 'Vui lòng nhập số điện thoại',
+                                },
+                                {
+                                    pattern: /^[0-9]{10}$/,
+                                    message: 'Số điện thoại không hợp lệ',
+                                },
                             ]}
                         >
                             <Input placeholder="Nhập số điện thoại" />
@@ -434,21 +512,24 @@ const CartPage: React.FC = () => {
                             name="address"
                             label="Địa chỉ"
                             rules={[
-                                { required: true, message: 'Vui lòng nhập địa chỉ' },
-                                { min: 10, message: 'Địa chỉ phải có ít nhất 10 ký tự' }
+                                {
+                                    required: true,
+                                    message: 'Vui lòng nhập địa chỉ',
+                                },
+                                {
+                                    min: 10,
+                                    message: 'Địa chỉ phải có ít nhất 10 ký tự',
+                                },
                             ]}
                         >
-                            <Input.TextArea 
-                                rows={3} 
+                            <Input.TextArea
+                                rows={3}
                                 placeholder="Nhập địa chỉ đầy đủ (số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố)"
                             />
                         </Form.Item>
-                        <Form.Item
-                            name="note"
-                            label="Ghi chú"
-                        >
-                            <Input.TextArea 
-                                rows={2} 
+                        <Form.Item name="note" label="Ghi chú">
+                            <Input.TextArea
+                                rows={2}
                                 placeholder="Ghi chú thêm về đơn hàng (không bắt buộc)"
                             />
                         </Form.Item>

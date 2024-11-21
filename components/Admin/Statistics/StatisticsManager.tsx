@@ -126,6 +126,7 @@ const StatisticsManager: React.FC<StatisticsProps> = ({ statisticsData }) => {
 
     const statusChartData = Object.entries(ordersByStatus).map(([status, count]) => ({
       status: status === 'PENDING' ? 'Chờ xử lý' :
+              status === 'APPROVED' ? 'Đã xác nhận' :
               status === 'COMPLETED' ? 'Hoàn thành' :
               status === 'CANCELLED' ? 'Đã hủy' : status,
       count,
@@ -265,11 +266,13 @@ const StatisticsManager: React.FC<StatisticsProps> = ({ statisticsData }) => {
       render: (status: string) => (
         <Tag color={
           status === 'PENDING' ? 'gold' :
-          status === 'COMPLETED' ? 'green' :
+            status === 'COMPLETED' ? 'green' :
+              status === 'APPROVED' ? 'blue' :
           status === 'CANCELLED' ? 'red' : 'blue'
         }>
           {status === 'PENDING' ? 'Chờ xử lý' :
-           status === 'COMPLETED' ? 'Hoàn thành' :
+            status === 'COMPLETED' ? 'Hoàn thành' :
+              status === 'APPROVED' ? 'Đã xác nhận' :
            status === 'CANCELLED' ? 'Đã hủy' : status}
         </Tag>
       ),

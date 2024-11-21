@@ -1,8 +1,32 @@
 import React, { useState } from 'react';
-import { Table, Tag, Space, Button, Modal, Input } from 'antd';
+import { Table, Tag, Space, Button, Modal, Input, message, Tooltip } from 'antd';
 import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { FilterValue, SorterResult } from 'antd/es/table/interface';
+
+// Update Shipment interface to match backend model
+interface Shipment {
+  id: string;
+  trackingNumber: string;
+  recipientName: string;
+  recipientPhone: string;
+  shippingAddress: string;
+  notes: string;
+  shippingFee: number;
+  status: ShipmentStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Update ShipmentStatus enum to match backend
+type ShipmentStatus = 
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'PROCESSING'
+  | 'SHIPPING'
+  | 'DELIVERED'
+  | 'CANCELLED'
+  | 'RETURNED';
 
 // Update Order interface to match backend model
 interface Order {
@@ -20,6 +44,7 @@ interface Order {
   cardHolder?: string;
   status: string;
   createdAt: string;
+  shipmentId: string;
 }
 
 interface OrderManagerProps {
@@ -37,27 +62,45 @@ interface OrderItem {
   price: number;
 }
 
+interface OrderDetails {
+  order: Order;
+  shipment: Shipment;
+  orderItems: OrderItem[];
+}
+
 const OrderManager: React.FC<OrderManagerProps> = ({ ordersData }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedOrderItems, setSelectedOrderItems] = useState<OrderItem[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
+  const [statusLoading, setStatusLoading] = useState<string>('');
 
   const fetchOrderItems = async (orderId: string) => {
     setLoading(true);
     try {
-      // Find and set the selected order
       const order = ordersData.find(o => o.id === orderId);
       setSelectedOrder(order || null);
 
-      const response = await fetch(`http://localhost:8080/api/orderItems/order/${orderId}`);
-      if (response.ok) {
-        const items = await response.json();
+      // Fetch both order items and shipment details
+      const [itemsResponse, shipmentResponse] = await Promise.all([
+        fetch(`http://localhost:8080/api/orderItems/order/${orderId}`),
+        fetch(`http://localhost:8080/api/shipments/order/${orderId}`)
+      ]);
+
+      if (itemsResponse.ok && shipmentResponse.ok) {
+        const items = await itemsResponse.json();
+        const shipments = await shipmentResponse.json();
+        
+        // Assuming one shipment per order, take the first one
+        const shipment = shipments[0];
+        
         setSelectedOrderItems(items);
+        setSelectedOrder(prev => prev ? {...prev, shipmentId: shipment.id} : null);
         setIsModalVisible(true);
       }
     } catch (error) {
-      console.error('Error fetching order items:', error);
+      console.error('Error fetching order details:', error);
+      message.error('Lỗi khi tải thông tin đơn hàng');
     }
     setLoading(false);
   };
@@ -93,6 +136,112 @@ const OrderManager: React.FC<OrderManagerProps> = ({ ordersData }) => {
     onFilter: (value: string, record: Order) =>
       record[dataIndex]?.toString().toLowerCase().includes(value.toLowerCase()) ?? false,
   });
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'PENDING': return 'Chờ xử lý';
+      case 'APPROVED': return 'Đã duyệt';
+      case 'COMPLETED': return 'Hoàn thành';
+      case 'CANCELLED': return 'Đã hủy';
+      default: return status;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PENDING': return 'gold';
+      case 'APPROVED': return 'blue';
+      case 'COMPLETED': return 'green';
+      case 'CANCELLED': return 'red';
+      default: return 'default';
+    }
+  };
+
+  const updateShipmentStatus = async (id: string, status: ShipmentStatus): Promise<Shipment> => {
+    const response = await fetch(`http://localhost:8080/api/shipments/${id}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(status)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Lỗi khi cập nhật trạng thái vận chuyển');
+    }
+
+    return response.json();
+  };
+
+  const handleStatusUpdate = async (orderId: string, orderStatus: string) => {
+    setStatusLoading(orderId);
+    try {
+      // First, get the shipment for this order
+      const shipmentResponse = await fetch(`http://localhost:8080/api/shipments/order/${orderId}`);
+      if (!shipmentResponse.ok) {
+        throw new Error('Không tìm thấy thông tin vận chuyển');
+      }
+      const shipments = await shipmentResponse.json();
+      const shipment = shipments[0]; // Assuming one shipment per order
+
+      if (!shipment) {
+        throw new Error('Không tìm thấy thông tin vận chuyển');
+      }
+
+      // Update order status
+      const orderResponse = await fetch(`http://localhost:8080/api/orders/${orderId}/status?status=${orderStatus}`, {
+        method: 'PUT',
+      });
+
+      if (!orderResponse.ok) {
+        throw new Error('Lỗi khi cập nhật trạng thái đơn hàng');
+      }
+
+      // Map order status to shipment status
+      let shipmentStatus: ShipmentStatus;
+      switch (orderStatus) {
+        case 'APPROVED':
+          shipmentStatus = 'CONFIRMED';
+          break;
+        case 'CANCELLED':
+          shipmentStatus = 'CANCELLED';
+          break;
+        case 'COMPLETED':
+          shipmentStatus = 'DELIVERED';
+          break;
+        default:
+          shipmentStatus = 'PENDING';
+      }
+
+      await updateShipmentStatus(shipment.id, shipmentStatus);
+      message.success('Cập nhật trạng thái thành công');
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      message.error(error instanceof Error ? error.message : 'Lỗi khi cập nhật trạng thái');
+    } finally {
+      setStatusLoading('');
+    }
+  };
+
+  const tableStyle = {
+    '.ant-table': {
+      borderRadius: '8px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    },
+    '.ant-table-thead > tr > th': {
+      backgroundColor: '#f7f7f7',
+      fontWeight: 600,
+    },
+    '.ant-table-tbody > tr:hover > td': {
+      backgroundColor: '#f5f5f5',
+    },
+    '.ant-table-row': {
+      cursor: 'pointer',
+      transition: 'all 0.3s',
+    },
+  };
 
   const columns: ColumnsType<Order> = [
     {
@@ -174,19 +323,14 @@ const OrderManager: React.FC<OrderManagerProps> = ({ ordersData }) => {
       width: 120,
       filters: [
         { text: 'Chờ xử lý', value: 'PENDING' },
+        { text: 'Đã duyệt', value: 'APPROVED' },
         { text: 'Hoàn thành', value: 'COMPLETED' },
         { text: 'Đã hủy', value: 'CANCELLED' },
       ],
       onFilter: (value: string, record) => record.status === value,
       render: (status: string) => (
-        <Tag color={
-          status === 'PENDING' ? 'gold' :
-          status === 'COMPLETED' ? 'green' :
-          status === 'CANCELLED' ? 'red' : 'blue'
-        }>
-          {status === 'PENDING' ? 'Chờ xử lý' :
-           status === 'COMPLETED' ? 'Hoàn thành' :
-           status === 'CANCELLED' ? 'Đã hủy' : status}
+        <Tag color={getStatusColor(status)}>
+          {getStatusLabel(status)}
         </Tag>
       ),
     },
@@ -194,62 +338,64 @@ const OrderManager: React.FC<OrderManagerProps> = ({ ordersData }) => {
       title: 'Thao tác',
       key: 'action',
       fixed: 'right',
-      width: 80,
-      render: (_: any, record: Order) => (
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-          <Button 
-            type="primary"
-            icon={<EyeOutlined />}
-            onClick={() => fetchOrderItems(record.id)}
-            style={{ 
-              backgroundColor: '#1890ff',
-              borderColor: '#1890ff',
-              width: '100%',
-              height: '32px'
-            }}
-          />
-          <Button 
-            type="primary" 
-            icon={<CheckCircleOutlined />}
-            onClick={() => handleStatusUpdate(record.id, 'COMPLETED')}
-            style={{
-              backgroundColor: '#52c41a',
-              borderColor: '#52c41a',
-              width: '100%',
-              height: '32px'
-            }}
-            disabled={record.status !== 'PENDING'}
-          />
-          <Button 
-            type="primary"
-            icon={<CloseCircleOutlined />}
-            onClick={() => handleStatusUpdate(record.id, 'CANCELLED')}
-            disabled={record.status !== 'PENDING'}
-            style={{ 
-              backgroundColor: '#f5222d',
-              borderColor: '#f5222d',
-              width: '100%',
-              height: '32px'
-            }}
-          />
+      width: 150,
+      render: (_, record: Order) => (
+        <Space>
+          <Tooltip title="Xem chi tiết">
+            <Button 
+              type="primary"
+              icon={<EyeOutlined />}
+              onClick={() => fetchOrderItems(record.id)}
+              size="middle"
+              style={{ 
+                borderRadius: '4px',
+                backgroundColor: '#1890ff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              Chi tiết
+            </Button>
+          </Tooltip>
+          {record.status === 'PENDING' && (
+            <Button 
+              type="primary"
+              loading={statusLoading === record.id}
+              onClick={() => handleStatusUpdate(record.id, 'APPROVED')}
+              style={{ borderRadius: '4px' }}
+              icon={<CheckCircleOutlined />}
+            >
+              Duyệt
+            </Button>
+          )}
+          {record.status === 'APPROVED' && (
+            <Button 
+              type="primary"
+              style={{ backgroundColor: '#52c41a', borderRadius: '4px' }}
+              loading={statusLoading === record.id}
+              onClick={() => handleStatusUpdate(record.id, 'COMPLETED')}
+              icon={<CheckCircleOutlined />}
+            >
+              Hoàn thành
+            </Button>
+          )}
+          {(record.status === 'PENDING' || record.status === 'APPROVED') && (
+            <Button 
+              danger
+              type="primary"
+              loading={statusLoading === record.id}
+              onClick={() => handleStatusUpdate(record.id, 'CANCELLED')}
+              style={{ borderRadius: '4px' }}
+              icon={<CloseCircleOutlined />}
+            >
+              Hủy
+            </Button>
+          )}
         </Space>
       ),
     },
   ];
-
-  const handleStatusUpdate = async (orderId: string, status: string) => {
-    try {
-      const response = await fetch(`http://localhost:8080/api/orders/${orderId}/status?status=${status}`, {
-        method: 'PUT',
-      });
-      if (response.ok) {
-        // Refresh orders data
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error('Error updating order status:', error);
-    }
-  };
 
   const orderItemColumns = [
     {
@@ -296,6 +442,15 @@ const OrderManager: React.FC<OrderManagerProps> = ({ ordersData }) => {
     return items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   };
 
+  const renderOrderStatus = (status: string) => (
+    <p>
+      <strong>Trạng thái:</strong> 
+      <Tag color={getStatusColor(status)} style={{ marginLeft: 8 }}>
+        {getStatusLabel(status)}
+      </Tag>
+    </p>
+  );
+
   return (
     <>
       <Table 
@@ -303,6 +458,7 @@ const OrderManager: React.FC<OrderManagerProps> = ({ ordersData }) => {
         dataSource={ordersData} 
         rowKey="id"
         scroll={{ x: 1500 }}
+        style={tableStyle}
         pagination={{
           defaultPageSize: 10,
           showSizeChanger: true,
@@ -340,17 +496,7 @@ const OrderManager: React.FC<OrderManagerProps> = ({ ordersData }) => {
                 {selectedOrder.cardHolder && (
                   <p><strong>Chủ thẻ:</strong> {selectedOrder.cardHolder}</p>
                 )}
-                <p><strong>Trạng thái:</strong> 
-                  <Tag color={
-                    selectedOrder.status === 'PENDING' ? 'gold' :
-                    selectedOrder.status === 'COMPLETED' ? 'green' :
-                    selectedOrder.status === 'CANCELLED' ? 'red' : 'blue'
-                  } style={{ marginLeft: 8 }}>
-                    {selectedOrder.status === 'PENDING' ? 'Chờ xử lý' :
-                     selectedOrder.status === 'COMPLETED' ? 'Hoàn thành' :
-                     selectedOrder.status === 'CANCELLED' ? 'Đã hủy' : selectedOrder.status}
-                  </Tag>
-                </p>
+                {renderOrderStatus(selectedOrder.status)}
               </div>
             </div>
             {selectedOrder.note && (
