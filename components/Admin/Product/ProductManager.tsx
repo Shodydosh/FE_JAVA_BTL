@@ -64,6 +64,14 @@ const ProductManager: React.FC<ProductManagerProps> = ({ productsData }) => {
                     text: 'Điện thoại',
                     value: 'mobile',
                 },
+                {
+                    text: 'Sách',
+                    value: 'book',
+                },
+                {
+                    text: 'Quần áo',
+                    value: 'clothes',
+                },
             ],
             onFilter: (value: React.Key | boolean, record: ProductProps) =>
                 record.category === value,
@@ -73,8 +81,12 @@ const ProductManager: React.FC<ProductManagerProps> = ({ productsData }) => {
                     <Tag color="pink">Máy tính bảng</Tag>
                 ) : category === 'mobile' ? (
                     <Tag color="purple">Điện thoại</Tag>
-                ) : (
+                ) : category === 'laptop' ? (
                     <Tag color="orange">Laptop</Tag>
+                ) : category === 'book' ? (
+                    <Tag color="blue">Sách</Tag>
+                ) : (
+                    <Tag color="green">Quần áo</Tag>
                 ),
         },
         {
