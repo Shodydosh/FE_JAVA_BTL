@@ -2,45 +2,18 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import CartDetailItem from './_components/CartDetailItem';
-import { Button, Modal, Form, Input, notification, Spin } from 'antd';
-import dynamic from 'next/dynamic';
+import { Button, Modal, Form, Input, notification, Spin, Card, List, Skeleton, Typography, Space, Divider } from 'antd';
+import { ShoppingCartOutlined, DeleteOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
-import Head from 'next/head';
 import Header from '@/components/Core/Header';
 
-// ...existing CartItem interface...
+// ...existing interfaces...
 
-interface CartItem {
-    id: string;
-    retailer: string;
-    img_url: string;
-    name: string;
-    price: number;
-    url: string;
-    category: string;
-}
-
-interface PaymentFormData {
-    fullName: string;
-    phone: string;
-    address: string;
-    note?: string;
-}
-
-interface OrderData {
-    items: Array<{
-        productId: string;
-        quantity: number;
-        price: number;
-    }>;
-    totalAmount: number;
-    phoneNumber: string;
-    shippingAddress: string;
-    customerName: string;
-    note?: string;
-}
+const { Title, Text } = Typography;
 
 const CartPage: React.FC = () => {
+    // ...existing state and hooks...
+
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -257,9 +230,12 @@ const CartPage: React.FC = () => {
                 <Header />
                 <div className="min-h-screen bg-gray-50 py-8">
                     <div className="mx-auto max-w-7xl px-4">
-                        <div className="flex items-center justify-center">
-                            <Spin size="large" />
-                        </div>
+                        <Card className="mb-4">
+                            <Skeleton active />
+                        </Card>
+                        <Card>
+                            <Skeleton active />
+                        </Card>
                     </div>
                 </div>
             </>
@@ -272,17 +248,21 @@ const CartPage: React.FC = () => {
                 <Header />
                 <div className="min-h-screen bg-gray-50 py-8">
                     <div className="mx-auto max-w-7xl px-4">
-                        <div className="rounded-lg bg-white p-8 text-center shadow">
-                            <h2 className="mb-4 text-2xl font-semibold text-gray-800">Giỏ hàng trống</h2>
-                            <p className="mb-6 text-gray-600">Hãy thêm sản phẩm vào giỏ hàng của bạn</p>
+                        <Card className="text-center">
+                            <ShoppingCartOutlined className="text-6xl text-gray-300 mb-4" />
+                            <Title level={3}>Giỏ hàng trống</Title>
+                            <Text className="block mb-6 text-gray-500">
+                                Hãy thêm sản phẩm vào giỏ hàng của bạn
+                            </Text>
                             <Button 
-                                size="large"
                                 type="primary"
+                                size="large"
+                                icon={<ShoppingOutlined />}
                                 onClick={() => router.push('/')}
                             >
                                 Tiếp tục mua sắm
                             </Button>
-                        </div>
+                        </Card>
                     </div>
                 </div>
             </>
@@ -294,81 +274,86 @@ const CartPage: React.FC = () => {
             <Header />
             <div className="min-h-screen bg-gray-50 py-8">
                 <div className="mx-auto max-w-7xl px-4">
-                    {/* Breadcrumb */}
-                    <div className="mb-6">
-                        <h1 className="text-2xl font-bold text-gray-900">Giỏ hàng</h1>
-                        <div className="mt-2 text-sm text-gray-500">
+                    <Space direction="vertical" className="w-full mb-6">
+                        <Title level={2}>Giỏ hàng</Title>
+                        <Text className="text-gray-500">
                             Trang chủ / Giỏ hàng
-                        </div>
-                    </div>
+                        </Text>
+                    </Space>
 
-                    <div className="lg:grid lg:grid-cols-12 lg:gap-x-12">
-                        {/* Cart Items */}
+                    <div className="lg:grid lg:grid-cols-12 lg:gap-6">
                         <div className="lg:col-span-8">
-                            <div className="rounded-lg bg-white shadow">
-                                <div className="p-6">
-                                    <h2 className="mb-4 text-lg font-medium text-gray-900">
-                                        Sản phẩm ({calcTotalQuantity})
-                                    </h2>
-                                    <div className="divide-y divide-gray-200">
-                                        {groupedCartItems.map((item) => (
+                            <Card className="mb-4 lg:mb-0">
+                                <List
+                                    header={
+                                        <div className="flex justify-between items-center">
+                                            <Title level={4} className="mb-0">
+                                                Sản phẩm ({calcTotalQuantity})
+                                            </Title>
+                                        </div>
+                                    }
+                                    dataSource={groupedCartItems}
+                                    renderItem={(item) => (
+                                        <List.Item
+                                            key={item.id}
+                                            className="!border-b last:!border-b-0"
+                                        >
                                             <CartDetailItem
-                                                key={item.id}
                                                 cart={item}
                                                 onRemove={removeHandler}
                                                 onQuantityChange={(qty) => handleQuantityChange(qty, item.id)}
                                             />
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
+                                        </List.Item>
+                                    )}
+                                />
+                            </Card>
                         </div>
 
-                        {/* Order Summary */}
-                        <div className="mt-6 lg:col-span-4 lg:mt-0">
-                            <div className="sticky top-4">
-                                <div className="rounded-lg bg-white shadow">
-                                    <div className="p-6">
-                                        <h2 className="text-lg font-medium text-gray-900">
-                                            Thông tin đơn hàng
-                                        </h2>
-                                        <div className="mt-6 space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <p className="text-sm text-gray-600">Tạm tính</p>
-                                                <p className="text-base font-medium text-gray-900">
-                                                    {new Intl.NumberFormat('vi-VN', {
-                                                        style: 'currency',
-                                                        currency: 'VND'
-                                                    }).format(calcTotalPrice)}
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                                                <p className="text-base font-medium text-gray-900">Tổng tiền</p>
-                                                <p className="text-xl font-semibold text-red-600">
-                                                    {new Intl.NumberFormat('vi-VN', {
-                                                        style: 'currency',
-                                                        currency: 'VND'
-                                                    }).format(calcTotalPrice)}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <Button
-                                            size="large"
-                                            className="mt-6 w-full bg-blue-600 text-white hover:bg-blue-700"
-                                            onClick={checkoutHandler}
-                                        >
-                                            Tiến hành thanh toán
-                                        </Button>
+                        <div className="lg:col-span-4">
+                            <Card className="sticky top-4">
+                                <Title level={4}>Thông tin đơn hàng</Title>
+                                <Space direction="vertical" className="w-full" size="large">
+                                    <div className="flex justify-between items-center">
+                                        <Text>Tạm tính</Text>
+                                        <Text strong>
+                                            {new Intl.NumberFormat('vi-VN', {
+                                                style: 'currency',
+                                                currency: 'VND'
+                                            }).format(calcTotalPrice)}
+                                        </Text>
                                     </div>
-                                </div>
-                            </div>
+                                    <Divider style={{ margin: '12px 0' }} />
+                                    <div className="flex justify-between items-center">
+                                        <Text strong>Tổng tiền</Text>
+                                        <Text className="text-xl text-red-600 font-bold">
+                                            {new Intl.NumberFormat('vi-VN', {
+                                                style: 'currency',
+                                                currency: 'VND'
+                                            }).format(calcTotalPrice)}
+                                        </Text>
+                                    </div>
+                                    <Button
+                                        type="primary"
+                                        size="large"
+                                        block
+                                        onClick={checkoutHandler}
+                                        className="mt-4"
+                                    >
+                                        Tiến hành thanh toán
+                                    </Button>
+                                </Space>
+                            </Card>
                         </div>
                     </div>
                 </div>
             </div>
 
             <Modal 
-                title="Thông tin giao hàng" 
+                title={
+                    <Title level={4} className="mb-0">
+                        Thông tin giao hàng
+                    </Title>
+                }
                 open={isModalOpen} 
                 onOk={handleModalOk}
                 onCancel={handleModalCancel}
@@ -376,55 +361,55 @@ const CartPage: React.FC = () => {
                 cancelText="Hủy"
                 width={600}
                 confirmLoading={isSubmitting}
-                okButtonProps={{
-                    style: { 
-                        backgroundColor: '#4caf50',
-                        borderColor: '#4caf50'
-                    }
-                }}
+                className="checkout-modal"
             >
                 <Spin spinning={isSubmitting}>
-                    <div className="mb-6">
-                        <h3 className="text-lg font-semibold mb-4">Danh sách sản phẩm</h3>
-                        <div className="max-h-48 overflow-auto">
-                            {groupedCartItems.map(item => (
-                                <div key={item.id} className="flex items-center gap-4 py-2 border-b">
-                                    <img 
-                                        src={item.img_url} 
-                                        alt={item.name} 
-                                        className="w-16 h-16 object-cover rounded"
-                                    />
-                                    <div className="flex-1">
-                                        <h4 className="font-medium">{item.name}</h4>
-                                        <div className="text-sm text-gray-500">
-                                            Số lượng: {item.quantity}
-                                        </div>
-                                        <div className="text-sm font-semibold text-blue-600">
-                                            {new Intl.NumberFormat('vi-VN', {
-                                                style: 'currency',
-                                                currency: 'VND'
-                                            }).format(item.price * item.quantity)}
+                    <Card className="mb-4">
+                        <Title level={5}>Danh sách sản phẩm</Title>
+                        <List
+                            className="max-h-48 overflow-auto"
+                            dataSource={groupedCartItems}
+                            renderItem={item => (
+                                <List.Item key={item.id}>
+                                    <div className="flex items-center gap-4">
+                                        <img 
+                                            src={item.img_url} 
+                                            alt={item.name} 
+                                            className="w-16 h-16 object-cover rounded"
+                                        />
+                                        <div className="flex-1">
+                                            <Text strong>{item.name}</Text>
+                                            <div className="text-sm text-gray-500">
+                                                Số lượng: {item.quantity}
+                                            </div>
+                                            <div className="text-sm font-semibold text-blue-600">
+                                                {new Intl.NumberFormat('vi-VN', {
+                                                    style: 'currency',
+                                                    currency: 'VND'
+                                                }).format(item.price * item.quantity)}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="mt-4 text-right">
-                            <span className="text-lg font-bold text-red-600">
+                                </List.Item>
+                            )}
+                        />
+                        <Divider />
+                        <div className="text-right">
+                            <Text strong className="text-lg text-red-600">
                                 Tổng: {new Intl.NumberFormat('vi-VN', {
                                     style: 'currency',
                                     currency: 'VND'
                                 }).format(calcTotalPrice)}
-                            </span>
+                            </Text>
                         </div>
-                    </div>
+                    </Card>
                     
                     <Form
                         form={form}
                         layout="vertical"
                         className="mt-4"
                     >
-                        <h3 className="text-lg font-semibold mb-4">Thông tin giao hàng</h3>
+                        <Title level={5}>Thông tin giao hàng</Title>
                         <Form.Item
                             name="fullName"
                             label="Họ và tên"
