@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { Card, Select, Layout, Typography, Pagination, Row, Col, Space } from 'antd';
+import { Card, Select, Layout, Typography, Pagination, Row, Col, Space, Empty } from 'antd';
+import { FilterOutlined } from '@ant-design/icons';
 import ProductCard from './ProductCard';
 
 const { Content } = Layout;
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 
 interface Product {
@@ -89,74 +90,90 @@ const ProductList = (props: any) => {
   };
 
   return (
-    <Content className="site-layout-content" style={{ padding: '0 50px', marginTop: 24 }}>
-      <Title level={2} style={{ textAlign: 'center', marginBottom: 32 }}>
-        Danh Sách Sản Phẩm
-      </Title>
+    <div className="min-h-screen bg-gray-50 px-4 py-8 md:px-6 lg:px-8">
+      
 
-      <Card style={{ marginBottom: 24 }}>
-        <Row gutter={24}>
-          <Col span={8}>
-            <Space direction="vertical" style={{ width: '100%' }}>
-              <Typography.Text strong>Danh mục:</Typography.Text>
-              <Select
-                style={{ width: '100%' }}
-                value={selectedCategory}
-                onChange={setSelectedCategory}
-              >
-                {categories.map(cat => (
-                  <Option key={cat} value={cat}>
-                    {cat === 'all' ? 'Tất cả' : cat}
-                  </Option>
-                ))}
-              </Select>
-            </Space>
-          </Col>
+      {/* Filters Section */}
+      <Card 
+        className="mb-8 rounded-lg shadow-sm"
+        title={
+          <Space>
+            <FilterOutlined className="text-primary" />
+            <Text strong>Bộ lọc tìm kiếm</Text>
+          </Space>
+        }
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Category Filter */}
+          <div className="flex flex-col space-y-2">
+            <Text strong>Danh mục:</Text>
+            <Select
+              className="w-full"
+              value={selectedCategory}
+              onChange={setSelectedCategory}
+            >
+              {categories.map(cat => (
+                <Option key={cat} value={cat}>
+                  {cat === 'all' ? 'Tất cả' : cat}
+                </Option>
+              ))}
+            </Select>
+          </div>
 
-          <Col span={8}>
-            <Space direction="vertical" style={{ width: '100%' }}>
-              <Typography.Text strong>Khoảng giá:</Typography.Text>
-              <Select
-                style={{ width: '100%' }}
-                value={priceRange}
-                onChange={setPriceRange}
-              >
-                <Option value="all">Tất cả</Option>
-                <Option value="under5m">Dưới 5 triệu</Option>
-                <Option value="5m-10m">5 - 10 triệu</Option>
-                <Option value="10m-20m">10 - 20 triệu</Option>
-                <Option value="over20m">Trên 20 triệu</Option>
-              </Select>
-            </Space>
-          </Col>
+          {/* Price Range Filter */}
+          <div className="flex flex-col space-y-2">
+            <Text strong>Khoảng giá:</Text>
+            <Select
+              className="w-full"
+              value={priceRange}
+              onChange={setPriceRange}
+            >
+              <Option value="all">Tất cả</Option>
+              <Option value="under5m">Dưới 5 triệu</Option>
+              <Option value="5m-10m">5 - 10 triệu</Option>
+              <Option value="10m-20m">10 - 20 triệu</Option>
+              <Option value="over20m">Trên 20 triệu</Option>
+            </Select>
+          </div>
 
-          <Col span={8}>
-            <Space direction="vertical" style={{ width: '100%' }}>
-              <Typography.Text strong>Sắp xếp theo giá:</Typography.Text>
-              <Select
-                style={{ width: '100%' }}
-                value={sortOrder}
-                onChange={setSortOrder}
-              >
-                <Option value="none">Mặc định</Option>
-                <Option value="asc">Giá tăng dần</Option>
-                <Option value="desc">Giá giảm dần</Option>
-              </Select>
-            </Space>
-          </Col>
-        </Row>
+          {/* Sort Order */}
+          <div className="flex flex-col space-y-2">
+            <Text strong>Sắp xếp theo giá:</Text>
+            <Select
+              className="w-full"
+              value={sortOrder}
+              onChange={setSortOrder}
+            >
+              <Option value="none">Mặc định</Option>
+              <Option value="asc">Giá tăng dần</Option>
+              <Option value="desc">Giá giảm dần</Option>
+            </Select>
+          </div>
+        </div>
       </Card>
 
-      <Row gutter={[16, 16]}>
-        {paginatedProducts.map((product: Product) => (
-          <Col key={product.id} xs={24} sm={12} md={8} lg={8} xl={6}>
-            <ProductCard data={product} />
-          </Col>
-        ))}
-      </Row>
+      {/* Products Grid */}
+      {filteredProducts.length === 0 ? (
+        <Empty
+          description="Không tìm thấy sản phẩm nào"
+          className="my-12"
+        />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+          {paginatedProducts.map((product: Product) => (
+            <div 
+              key={product.id}
+              className="transform transition-transform duration-300 hover:-translate-y-2"
+            >
+              <ProductCard data={product} />
+            </div>
+          ))}
+        </div>
+      )}
 
+      {/* Pagination */}
       {totalPages > 1 && (
-        <Row justify="center" style={{ marginTop: 24, marginBottom: 24 }}>
+        <div className="flex justify-center mt-8 bg-white rounded-lg shadow-sm p-4">
           <Pagination
             current={currentPage}
             total={filteredProducts.length}
@@ -164,11 +181,12 @@ const ProductList = (props: any) => {
             onChange={handlePageChange}
             onShowSizeChange={handleSizeChange}
             showSizeChanger={true}
+            showTotal={(total) => `Tổng ${total} sản phẩm`}
             pageSizeOptions={['8', '16', '24', '32']}
           />
-        </Row>
+        </div>
       )}
-    </Content>
+    </div>
   );
 };
 

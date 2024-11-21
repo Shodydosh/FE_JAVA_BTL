@@ -248,8 +248,16 @@ const getCartId = async (userId: string) => {
         {
             key: 'price',
             children: productData?.price ? (
-                <div className="mb-4 text-3xl font-bold text-red-600">
-                    {productData.price.toLocaleString('vi-VN')} ₫
+                <div className="mb-4">
+                    <div className="text-3xl font-bold text-red-600">
+                        {productData.price.toLocaleString('vi-VN')} ₫
+                    </div>
+                    <div className="text-lg text-gray-500 line-through">
+                        {(productData.price * 1.1).toLocaleString('vi-VN')} ₫
+                    </div>
+                    <div className="text-sm text-green-600">
+                        Tiết kiệm {(productData.price * 0.1).toLocaleString('vi-VN')} ₫
+                    </div>
                 </div>
             ) : (
                 ''
@@ -257,28 +265,38 @@ const getCartId = async (userId: string) => {
             span: 3,
         },
         {
-            key: 'description',
+            key: 'promotions',
             children: (
-                <div className="rounded-lg bg-gray-50 p-4">
-                    <h3 className="mb-2 font-semibold">Mô tả sản phẩm</h3>
-                    <p className="leading-relaxed text-gray-700">
-                        Laptop gaming cao cấp với CPU Intel Core i9 12900H (14
-                        nhân, 20 luồng), GPU NVIDIA RTX 3070Ti 8GB, RAM 32GB
-                        DDR5 (nâng cấp tối đa 64GB), SSD 1TB PCIe. Mạnh mẽ cho
-                        gaming và đồ họa, trang bị công nghệ NVIDIA Optimus và
-                        MUX Switch tối ưu hiệu năng.
-                    </p>
+                <div className="mb-4">
+                    <h3 className="font-semibold text-red-600 mb-2">Khuyến mãi đặc biệt</h3>
+                    <ul className="space-y-2">
+                        <li className="flex items-center gap-2">
+                            <span className="inline-block w-5 h-5 bg-red-600 text-white rounded-full text-center text-sm">1</span>
+                            <span>Giảm ngay 10% cho khách hàng mua online</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <span className="inline-block w-5 h-5 bg-red-600 text-white rounded-full text-center text-sm">2</span>
+                            <span>Tặng phiếu mua hàng trị giá 500.000đ</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <span className="inline-block w-5 h-5 bg-red-600 text-white rounded-full text-center text-sm">3</span>
+                            <span>Miễn phí giao hàng toàn quốc</span>
+                        </li>
+                    </ul>
                 </div>
             ),
             span: 3,
-        },
+        }
     ];
 
     return (
-        <div className="container mx-auto bg-gray-50 p-6">
-            <div className="grid grid-cols-1 gap-8 rounded-xl bg-white p-6 shadow-lg lg:grid-cols-2">
+        <div className="container mx-auto bg-gray-100 p-8">
+            <div className="grid grid-cols-1 gap-8 rounded-xl bg-white p-8 shadow-lg border-2 border-gray-200 lg:grid-cols-2">
                 {/* Product Image Section */}
-                <div className="relative h-[500px] overflow-hidden rounded-xl">
+                <div className="relative h-[500px] overflow-hidden rounded-xl border-2 border-gray-100 p-4 bg-white shadow-sm">
+                    <div className="absolute top-4 left-4 z-10 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                        Giảm 10%
+                    </div>
                     <Image
                         src={productData?.img_url || ''}
                         alt="Hình ảnh sản phẩm"
@@ -288,7 +306,7 @@ const getCartId = async (userId: string) => {
                 </div>
 
                 {/* Product Info Section */}
-                <div className="flex flex-col">
+                <div className="flex flex-col divide-y divide-gray-200">
                     <Descriptions
                         bordered={false}
                         column={1}
@@ -314,11 +332,11 @@ const getCartId = async (userId: string) => {
             </div>
 
             {/* Rating Section */}
-            <div className="mt-8 rounded-xl bg-white p-6 shadow-lg">
-                <h2 className="mb-6 text-2xl font-bold">Đánh giá sản phẩm</h2>
+            <div className="mt-8 rounded-xl bg-white p-8 shadow-lg border-2 border-gray-200">
+                <h2 className="mb-6 text-2xl font-bold border-b-2 border-gray-200 pb-4">Đánh giá sản phẩm</h2>
 
                 {/* Rating Form */}
-                <div className="mb-8 rounded-lg bg-gray-50 p-6">
+                <div className="mb-8 rounded-lg bg-gray-50 p-6 border border-gray-200">
                     <Form
                         form={form}
                         onFinish={handleRatingSubmit}
@@ -363,30 +381,32 @@ const getCartId = async (userId: string) => {
                 </div>
 
                 {/* Reviews List */}
-                <div className="space-y-6">
+                <div className="space-y-6 divide-y divide-gray-200">
                     {ratings.map((rating, index) => (
                         <div
                             key={rating.id || index}
-                            className="border-b border-gray-200 pb-6 last:border-0"
+                            className="pt-6 first:pt-0"
                         >
-                            <Rate
-                                disabled
-                                value={rating.rating}
-                                className="text-yellow-400"
-                            />
-                            <p className="mt-3 text-gray-700">
-                                {rating.comment}
-                            </p>
-                            <p className="mt-2 text-sm text-gray-500">
-                                {new Date(rating.createdAt).toLocaleDateString(
-                                    'vi-VN',
-                                    {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                    },
-                                )}
-                            </p>
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                <Rate
+                                    disabled
+                                    value={rating.rating}
+                                    className="text-yellow-400"
+                                />
+                                <p className="mt-3 text-gray-700">
+                                    {rating.comment}
+                                </p>
+                                <p className="mt-2 text-sm text-gray-500">
+                                    {new Date(rating.createdAt).toLocaleDateString(
+                                        'vi-VN',
+                                        {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                        },
+                                    )}
+                                </p>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -396,8 +416,8 @@ const getCartId = async (userId: string) => {
 
             {/* Related Products */}
             {!isLoading && otherProducts.length > 0 && (
-                <div className="mt-8">
-                    <h2 className="mb-6 text-2xl font-bold">
+                <div className="mt-8 rounded-xl bg-white p-8 shadow-lg border-2 border-gray-200">
+                    <h2 className="mb-6 text-2xl font-bold border-b-2 border-gray-200 pb-4">
                         Sản phẩm tương tự
                     </h2>
                     <OtherProducts data={otherProducts} />
@@ -408,7 +428,7 @@ const getCartId = async (userId: string) => {
                     Không có sản phẩm tương tự
                 </div>
             )}
-        </div>
+            </div>
     );
 };
 

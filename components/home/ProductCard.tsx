@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
-import { EllipsisOutlined, ShoppingCartOutlined } from '@ant-design/icons';
-import { Card, Typography } from 'antd';
+import { EllipsisOutlined, ShoppingCartOutlined, HeartOutlined } from '@ant-design/icons';
+import { Card, Typography, Badge, Tag, Space } from 'antd';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -37,42 +37,82 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
     const router = useRouter();
-    const isValidImage =
-        data.img_url &&
-        (data.img_url.startsWith('/') || data.img_url.startsWith('http'));
-    const handleClick = () => {
-        const productId = data.id; // Assuming data.id is a string
-        router.push(`/product/${productId}`);
-    };
+    const SALE_BADGE = "SALE 10%";
+    
+    // Update price calculation to handle both string and number types
+    const actualPrice = typeof data.price === 'string' 
+        ? parseFloat(data.price.replace(/[^\d.,]/g, ''))
+        : parseFloat(data.price);
+    const originalPrice = actualPrice * 1.1;
 
     return (
-        <div
-            className="min-h-96 w-full rounded shadow-lg hover:cursor-pointer"
-            onClick={handleClick}
-        >
-            <div className="w-full bg-white p-2">
-                <div className="h-48 w-full">
-                    <Image
-                        src={data.img_url}
-                        alt="Product"
-                        width={200}
-                        height={200}
-                        unoptimized={true}
-                        className="object-contain"
-                    />
-                </div>
-                <div className="mt-2 h-full flex-row">
-                    <h1 className="h-16 text-base font-semibold text-black line-clamp-2">
-                        {data.name}
-                    </h1>
-                    
-                    <div className="mt-1">
-                        <h3 className="text-xl text-blue-400">{formatPrice(data.price)}</h3>
+        <Badge.Ribbon text={SALE_BADGE} color="red">
+            <Card
+                hoverable
+                style={{
+                    height: '100%',
+                    borderRadius: 12,
+                    overflow: 'hidden',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                    transition: 'all 0.3s ease'
+                }}
+                onClick={() => router.push(`/product/${data.id}`)}  // Add this line
+                cover={
+                    <div style={{
+                        height: 200,
+                        overflow: 'hidden',
+                        position: 'relative',
+                        display: 'flex',         // Add this
+                        justifyContent: 'center', // Add this
+                        alignItems: 'center'      // Add this
+                    }}>
+                        <img
+                            alt={data.name}
+                            src={data.img_url}
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain',  // Change from 'cover' to 'contain'
+                                transition: 'transform 0.3s ease'
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.1)';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.transform = 'scale(1)';
+                            }}
+                        />
                     </div>
-                </div>
-                
-            </div>
-        </div>
+                }
+                actions={[
+                    <HeartOutlined key="heart" />,
+                    <ShoppingCartOutlined key="cart" onClick={() => router.push(`/product/${data.id}`)} />
+                ]}
+            >
+                <Meta
+                    title={
+                        <Text
+                            style={{ fontSize: 16, fontWeight: 600 }}
+                            ellipsis={{ rows: 2 }}
+                        >
+                            {data.name}
+                        </Text>
+                    }
+                    description={
+                        <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                            <div>
+                                <Text delete type="secondary" style={{ fontSize: 14 }}>
+                                    {formatPrice(originalPrice)}
+                                </Text>
+                            </div>
+                            <Title level={4} className='!text-blue-400'>
+                                {formatPrice(data.price)}
+                            </Title>
+                        </Space>
+                    }
+                />
+            </Card>
+        </Badge.Ribbon>
     );
 };
 

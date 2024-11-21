@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, Typography } from 'antd';
+import { Layout, Typography, Row, Col } from 'antd';
 import {
     EnvironmentOutlined,
     PhoneOutlined,
@@ -13,150 +13,99 @@ import ems from "../../app/assets/images/ems.png"
 import jandt from "../../app/assets/images/jandt.png"
 
 const { Text } = Typography;
-const { Header, Content, Footer, Sider } = Layout;
+const { Footer } = Layout;
 
 const FooterView = () => {
     return (
-        <Footer>
-            <div className=" flex space-x-4 justify-between ">
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <Image
-                        src={branch1}
-                        alt="My Image"
-                        className="w-120 h-20  ml-[-70px]"
-                    />
-                    <span style={{ fontWeight: '500' }}>
-                        <EnvironmentOutlined style={{ marginRight: '6px' }} />
-                        Km 10, Đường Nguyễn Trãi, Hà Nội – Hà Đông
-                    </span>
-                    <span style={{ marginTop: '12px', fontWeight: '500' }}>
-                        <PhoneOutlined style={{ marginRight: '6px' }} />
-                        0987654321
-                    </span>
-                    <span style={{ marginTop: '12px', fontWeight: '500' }}>
-                        <MailOutlined style={{ marginRight: '6px' }} />
-                        ptitstore@gmail.com
-                    </span>
-                </div>
-                <div
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        marginLeft: '36px',
-                    }}
-                >
-                    <Text
-                        style={{
-                            fontWeight: 'bold',
-                            color: '#1890ff',
-                            fontSize: 16,
-                        }}
-                    >
-                        Thông tin chung
-                    </Text>
-                    <Text style={{ fontWeight: '500', marginTop: '12px' }}>
-                        Giới thiệu
-                    </Text>
-                </div>
-                <div
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        marginLeft: '36px',
-                    }}
-                >
-                    <Text
-                        style={{
-                            fontWeight: 'bold',
-                            color: '#1890ff',
-                            fontSize: 16,
-                        }}
-                    >
-                        Hướng dẫn mua bán
-                    </Text>
-                    <Text style={{ fontWeight: '500', marginTop: '12px' }}>
-                        Chính Sách Vận Chuyển - Giao Hàng
-                    </Text>
-                    <Text style={{ fontWeight: '500', marginTop: '3px' }}>
-                        Chính Sách Bảo Hành Đổi Trả
-                    </Text>
-                </div>
-                <div
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        marginLeft: '90px',
-                    }}
-                >
-                    <Text
-                        style={{
-                            fontWeight: 'bold',
-                            color: '#1890ff',
-                            fontSize: 16,
-                        }}
-                    >
-                        Đơn Vị Vận Chuyển
-                    </Text>
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            marginTop: '6px',
-                            alignItems: 'center',
-                            gap: '8px'
-                        }}
-                    >
+        <Footer className="bg-white py-8">
+            <Row gutter={[32, 32]} justify="space-around" className="max-w-7xl mx-auto px-4">
+                {/* Company Info Column */}
+                <Col xs={24} md={6} className="mb-6 md:mb-0">
+                    <div className="flex flex-col">
                         <Image
-                            src={ghn}
-                            alt="My Image"
-                            width={80}
-                            height={48}
-                            style={{ objectFit: 'contain' }}
-                            className="rounded"
+                            src={branch1}
+                            alt="PTIT Store"
+                            className="w-48 h-20 object-contain mb-6"
                         />
-                        <Image
-                            src={ghtk}
-                            alt="My Image"
-                            width={80}
-                            height={48}
-                            style={{ objectFit: 'contain' }}
-                            className="rounded"
-                        />
-                        <Image
-                            src={ems}
-                            alt="My Image"
-                            width={80}
-                            height={48}
-                            style={{ objectFit: 'contain' }}
-                            className="rounded"
-                        />
-                        <Image
-                            src={jandt}
-                            alt="My Image"
-                            width={80}
-                            height={48}
-                            style={{ objectFit: 'contain' }}
-                            className="rounded"
-                        />
+                        <div className="flex flex-col space-y-4">
+                            <Text className="flex items-center font-medium text-gray-600">
+                                <EnvironmentOutlined className="mr-2 text-blue-500" />
+                                Km 10, Đường Nguyễn Trãi, Hà Nội – Hà Đông
+                            </Text>
+                            <Text className="flex items-center font-medium text-gray-600">
+                                <PhoneOutlined className="mr-2 text-blue-500" />
+                                0987654321
+                            </Text>
+                            <Text className="flex items-center font-medium text-gray-600">
+                                <MailOutlined className="mr-2 text-blue-500" />
+                                ptitstore@gmail.com
+                            </Text>
+                        </div>
                     </div>
-                    <Text
-                        style={{
-                            fontWeight: 'bold',
-                            color: '#1890ff',
-                            fontSize: 16,
-                            marginTop: '6px',
-                        }}
-                    >
-                        Hình thức thanh toán
-                    </Text>
-                    <Text style={{ fontWeight: '500', marginTop: '3px' }}>
-                        Chuyển khoản
-                    </Text>
-                    <Text style={{ fontWeight: '500', marginTop: '3px' }}>
-                        Tiền mặt
-                    </Text>
-                </div>
-            </div>
+                </Col>
+
+                {/* Links Column */}
+                <Col xs={24} md={6} className="mb-6 md:mb-0">
+                    <div className="flex flex-col space-y-8">
+                        <div>
+                            <Text className="text-blue-500 font-bold text-lg block mb-4">
+                                Thông tin chung
+                            </Text>
+                            <Text className="font-medium text-gray-600 block">
+                                Giới thiệu
+                            </Text>
+                        </div>
+                        
+                        <div>
+                            <Text className="text-blue-500 font-bold text-lg block mb-4">
+                                Hướng dẫn mua bán
+                            </Text>
+                            <div className="flex flex-col space-y-2">
+                                <Text className="font-medium text-gray-600">
+                                    Chính Sách Vận Chuyển - Giao Hàng
+                                </Text>
+                                <Text className="font-medium text-gray-600">
+                                    Chính Sách Bảo Hành Đổi Trả
+                                </Text>
+                            </div>
+                        </div>
+                    </div>
+                </Col>
+
+                {/* Payment & Shipping Column */}
+                <Col xs={24} md={8} className="mb-6 md:mb-0">
+                    <div className="flex flex-col space-y-8">
+                        <div>
+                            <Text className="text-blue-500 font-bold text-lg block mb-4">
+                                Hình thức thanh toán
+                            </Text>
+                            <div className="flex flex-col space-y-2">
+                                <Text className="font-medium text-gray-600">Chuyển khoản</Text>
+                                <Text className="font-medium text-gray-600">Tiền mặt</Text>
+                            </div>
+                        </div>
+
+                        <div>
+                            <Text className="text-blue-500 font-bold text-lg block mb-4">
+                                Đơn Vị Vận Chuyển
+                            </Text>
+                            <div className="flex flex-row items-center gap-6">
+                                {[ghn, ghtk, ems, jandt].map((logo, index) => (
+                                    <div key={index} className="w-20 h-12 flex items-center justify-center">
+                                        <Image
+                                            src={logo}
+                                            alt="Shipping Partner"
+                                            width={75}
+                                            height={45}
+                                            className="object-contain rounded hover:opacity-80 transition-opacity"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </Col>
+            </Row>
         </Footer>
     );
 };
