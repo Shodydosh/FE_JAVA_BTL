@@ -49,8 +49,6 @@ const App: React.FC = () => {
     const [data, setData] = useState([]);
     const [product, setProduct] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 8; // số sản phẩm trên mỗi trang
 
     useEffect(() => {
         // Define the URL you want to fetch data from
@@ -78,17 +76,6 @@ const App: React.FC = () => {
 
     useEffect(() => {}, [isLoading]);
 
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
-    };
-
-    // Tính toán sản phẩm cho trang hiện tại
-    const getCurrentProducts = () => {
-        const startIndex = (currentPage - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        return product.slice(startIndex, endIndex);
-    };
-
     return isLoading ? (
         <LoadingPage />
     ) : (
@@ -98,16 +85,8 @@ const App: React.FC = () => {
                     <Content className="min-h-screen w-full">
                         <ProductList 
                             className="small-product-cards" 
-                            productData={getCurrentProducts()} 
+                            productData={product} 
                         />
-                        <div className="flex justify-center mt-4">
-                            <Pagination
-                                current={currentPage}
-                                total={product.length}
-                                pageSize={pageSize}
-                                onChange={handlePageChange}
-                            />
-                        </div>
                     </Content>
                 </Layout>
             </Layout>
