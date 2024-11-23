@@ -11,6 +11,8 @@ import {
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Breadcrumb, Layout, Menu, Button, Input, Typography, Pagination } from 'antd';
+import { checkAuth } from '../../components/utils/auth';
+import { useRouter } from 'next/navigation';
 
 import Banner from '../../components/home/Banner';
 import ProductList from '../../components/home/ProductList';
@@ -45,12 +47,18 @@ const onSearch = (value: any, _e: any, info: any) =>
     console.log(info?.source, value);
 
 const App: React.FC = () => {
+    const router = useRouter();
     const [current, setCurrent] = useState('1');
     const [data, setData] = useState([]);
     const [product, setProduct] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        const { role } = checkAuth();
+        if (role === 'ADMIN') {
+            router.push('/admin/dashboard');
+            return;
+        }
         // Define the URL you want to fetch data from
         const apiUrl = 'http://localhost:8080/api/product';
 
