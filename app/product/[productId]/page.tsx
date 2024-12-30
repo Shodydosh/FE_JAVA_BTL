@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import axios from 'axios';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
     Divider,
     Descriptions,
@@ -44,6 +44,7 @@ interface Product {
 
 const ProductPage = () => {
     const params = useParams();
+    const router = useRouter();
     const [productData, setProductData] = useState<Product | null>(null);
     const [otherProducts, setOtherProducts] = useState<any>([]);
     const [fetchDone, setFetchDone] = useState<boolean>(false);
@@ -128,6 +129,14 @@ const getCartId = async (userId: string) => {
             const userData = JSON.parse(
                 localStorage.getItem('userData') || '{}',
             );
+            
+            // Check if user is logged in
+            if (!userData.id) {
+                message.warning('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+                router.push('/login');
+                return;
+            }
+
             const userId = userData.id;
             const cartId = await getCartId(userId);
             const response = await axios.post(

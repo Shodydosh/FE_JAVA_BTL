@@ -259,16 +259,33 @@ const CartPage: React.FC = () => {
                 phoneNumber: values.phone,
                 shippingAddress: values.address,
                 customerName: values.fullName,
-                note: values.note, // Thêm note vào đây
+                note: values.note,
             };
+
+            // Clear the cart before redirecting
+            if (cartId) {
+                try {
+                    const response = await fetch(
+                        `http://localhost:8080/api/cart/${cartId}/clear`,
+                        {
+                            method: 'DELETE',
+                            credentials: 'include',
+                        }
+                    );
+                    if (!response.ok) {
+                        console.error('Failed to clear cart');
+                    }
+                } catch (error) {
+                    console.error('Error clearing cart:', error);
+                }
+            }
 
             localStorage.setItem('pendingOrder', JSON.stringify(orderData));
             router.push('/payment');
         } catch (error) {
             notification.error({
                 message: 'Lỗi',
-                description:
-                    error instanceof Error ? error.message : 'Có lỗi xảy ra',
+                description: error instanceof Error ? error.message : 'Có lỗi xảy ra',
             });
         } finally {
             setIsSubmitting(false);

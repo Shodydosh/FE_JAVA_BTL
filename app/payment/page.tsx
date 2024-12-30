@@ -105,6 +105,32 @@ const PaymentPage = () => {
         }
     };
 
+    // Update clearCart function to properly handle the response
+    const clearCart = async (cartId: string) => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/cart/${cartId}/clear`, {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to clear cart');
+            }
+
+            // Clear local cart data if needed
+            localStorage.removeItem('cartItems');
+        } catch (error) {
+            console.error('Error clearing cart:', error);
+            notification.error({
+                message: 'Error',
+                description: 'Failed to clear cart items'
+            });
+        }
+    };
+
     const handleSubmit = async (values: any) => {
         try {
             setIsSubmitting(true);
@@ -172,23 +198,22 @@ const PaymentPage = () => {
                 orderItems: orderData.items
             });
 
-            // Clear the cart
-            const cartResponse = await fetch('http://localhost:8080/api/cart/59cd9ce2-1b15-4fe9-a775-9169fc90c907/clear', {
-                method: 'DELETE',
-                credentials: 'include',
-            });
-
-            if (!cartResponse.ok) {
-                console.error('Failed to clear cart');
+            // Get cartId from localStorage or state
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            const cartResponse = await fetch(`http://localhost:8080/api/cart/user/${userData.id}`);
+            const cartData = await cartResponse.json();
+            
+            if (cartData && cartData.id) {
+                await clearCart(cartData.id);
             }
 
             localStorage.removeItem('pendingOrder');
             notification.success({
-                message: 'Đặt hàng thành công',
-                description: 'Đơn hàng và vận chuyển đã được tạo. Email xác nhận đã được gửi.'
+                message: 'Order placed successfully',
+                description: 'Your cart has been cleared'
             });
 
-            router.push('/');
+            router.push('/order-success');
         } catch (error) {
             console.error('Error details:', error);
             notification.error({
