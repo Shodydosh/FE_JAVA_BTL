@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import jwtDecode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode'; // Update this line
 
 interface LoginRequest {
   email: string;
@@ -11,8 +11,20 @@ interface LoginRequest {
 }
 
 interface JwtPayload {
+  sub: string;
+  email: string;
+  role: string;  // This will now be included in the token
+  iat: number;
+  exp: number;
+}
+
+interface User {
+  id: string;
+  email: string;
+  name: string;
   role: string;
-  // ...other JWT fields...
+  createdDate: string;
+  lastModifiedDate: string;
 }
 
 const AdminLogin = () => {
@@ -21,14 +33,14 @@ const AdminLogin = () => {
 
   const handleRedirect = (role: string) => {
     console.log('Redirecting with role:', role);
-    switch (role.toUpperCase()) {
-      case 'ADMIN':
+    switch (role.toLowerCase()) {  // Change to toLowerCase()
+      case 'admin':
         router.push('/admin');
         break;
-      case 'SHIPPER':
+      case 'shipper':
         router.push('/shipper');
         break;
-      case 'MANAGER':
+      case 'manager':
         console.log('Detected manager role, redirecting to /manager');
         router.push('/manager');
         break;
@@ -37,6 +49,16 @@ const AdminLogin = () => {
         message.error('Invalid role');
         localStorage.removeItem('token');
         localStorage.removeItem('role');
+    }
+  };
+
+  const fetchUserByEmail = async (email: string): Promise<User> => {
+    try {
+      const response = await axios.get(`http://localhost:8080/api/client/users/email/${email}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      throw error;
     }
   };
 
@@ -49,20 +71,43 @@ const AdminLogin = () => {
         password: values.password
       });
       
-      console.log('Login response:', response.data);
       const token = response.data;
-      const decoded = jwtDecode<JwtPayload>(token);
-      console.log('Decoded token:', decoded);
+      console.log('Token:', token);
       
-      localStorage.setItem('token', token);
-      localStorage.setItem('role', decoded.role);
-      
-      message.success('Login successful');
-      handleRedirect(decoded.role);
+      try {
+        const decoded = jwtDecode<JwtPayload>(token);
+        console.log('Decoded token:', decoded);
+        
+        // Fetch user details using email from token
+        const user = await fetchUserByEmail(decoded.email);
+        console.log('Fetched user:', user);
+        
+        if (!user.role) {
+          message.error('Role information missing');
+          return;
+        }
+        
+        localStorage.setItem('token', token);
+        localStorage.setItem('role', user.role);
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        message.success('Login successful');
+        handleRedirect(user.role);
+      } catch (decodeError) {
+        console.error('Token decode or user fetch error:', decodeError);
+        message.error('Authentication failed');
+      }
     } catch (error: any) {
       console.error('Login error:', error);
-      console.error('Error response:', error.response);
-      message.error(error.response?.data || 'Login failed');
+      // Backend specific error messages
+      const errorMessage = error.response?.data || 'Login failed';
+      if (errorMessage === 'User not found') {
+        message.error('User not found');
+      } else if (errorMessage === 'Incorrect password') {
+        message.error('Incorrect password');
+      } else {
+        message.error('Login failed');
+      }
     }
     setLoading(false);
   };
@@ -103,3 +148,4 @@ const AdminLogin = () => {
 };
 
 export default AdminLogin;
+
