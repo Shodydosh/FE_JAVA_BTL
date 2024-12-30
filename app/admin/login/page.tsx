@@ -3,31 +3,65 @@ import { useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import jwtDecode from 'jwt-decode';
 
 interface LoginRequest {
   email: string;
   password: string;
 }
 
+interface JwtPayload {
+  role: string;
+  // ...other JWT fields...
+}
+
 const AdminLogin = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
+  const handleRedirect = (role: string) => {
+    console.log('Redirecting with role:', role);
+    switch (role.toUpperCase()) {
+      case 'ADMIN':
+        router.push('/admin');
+        break;
+      case 'SHIPPER':
+        router.push('/shipper');
+        break;
+      case 'MANAGER':
+        console.log('Detected manager role, redirecting to /manager');
+        router.push('/manager');
+        break;
+      default:
+        console.log('Invalid role detected:', role);
+        message.error('Invalid role');
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+    }
+  };
+
   const onFinish = async (values: LoginRequest) => {
     setLoading(true);
     try {
+      console.log('Attempting login with:', values.email);
       const response = await axios.post('http://localhost:8080/api/auth/login', {
         email: values.email,
         password: values.password
       });
       
-      // Backend returns JWT token directly as string
+      console.log('Login response:', response.data);
       const token = response.data;
-
+      const decoded = jwtDecode<JwtPayload>(token);
+      console.log('Decoded token:', decoded);
+      
       localStorage.setItem('token', token);
+      localStorage.setItem('role', decoded.role);
+      
       message.success('Login successful');
-      router.push('/admin');
+      handleRedirect(decoded.role);
     } catch (error: any) {
+      console.error('Login error:', error);
+      console.error('Error response:', error.response);
       message.error(error.response?.data || 'Login failed');
     }
     setLoading(false);

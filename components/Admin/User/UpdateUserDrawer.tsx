@@ -19,11 +19,12 @@ import {
     UserProps,
 } from '../../../interfaces/UserInterfaces';
 
-interface ThisProps {
+interface UpdateUserDrawerProps {
     userData: UserProps;
+    onUpdateSuccess: (updatedUser: UserProps) => void;
 }
 
-const UpdateUserDrawer: React.FC<ThisProps> = ({ userData }) => {
+const UpdateUserDrawer: React.FC<UpdateUserDrawerProps> = ({ userData, onUpdateSuccess }) => {
     const [open, setOpen] = useState(false);
     const [formValues, setFormValues] = useState({
         name: userData.name,
@@ -32,8 +33,22 @@ const UpdateUserDrawer: React.FC<ThisProps> = ({ userData }) => {
         role: userData.role,
     });
 
+    const handleUpdate = async (values: any) => {
+        try {
+            const response = await axios.put(`/api/users/${userData.id}`, values);
+            if (response.status === 200) {
+                onUpdateSuccess(response.data);
+                message.success('User update successfully');
+                setTimeout(() => {
+                    setOpen(false);
+                }, 500);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    };
+
     const handleSubmitForm = () => {
-        const addApiUrl = `http://localhost:8080/api/admin/users/update?id=${userData.id}`;
         if (
             formValues.name === '' ||
             formValues.password === '' ||
@@ -47,20 +62,7 @@ const UpdateUserDrawer: React.FC<ThisProps> = ({ userData }) => {
             formValues,
         );
 
-        axios
-            .post(addApiUrl, formValues)
-            .then((response) => {
-                console.log('Success:', response.data);
-                message.success('User update successfully');
-                setTimeout(() => {
-                    setOpen(false);
-                }, 500);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-
-        // After a successful action, you can close the drawer
+        handleUpdate(formValues);
     };
 
     const showDrawer = () => {
@@ -196,6 +198,8 @@ const UpdateUserDrawer: React.FC<ThisProps> = ({ userData }) => {
                                 >
                                     <Option value="client">Client</Option>
                                     <Option value="admin">Admin</Option>
+                                    <Option value="shipper">Shipper</Option>
+                                    <Option value="manager">Manager</Option>
                                 </Select>
                             </Form.Item>
                         </Col>

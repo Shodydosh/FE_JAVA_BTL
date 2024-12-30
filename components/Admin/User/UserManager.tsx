@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { Table, Popconfirm, Button, Tag } from 'antd';
 import type { ColumnsType, TableProps } from 'antd/es/table';
@@ -8,6 +8,22 @@ import UpdateUserDrawer from './UpdateUserDrawer';
 import { UserManagerProps, UserProps } from '../../../interfaces/UserInterfaces';
 
 const UserManager: React.FC<UserManagerProps> = ({ usersData }) => {
+    const [users, setUsers] = useState<UserProps[]>(usersData);
+
+    const updateUsersList = (updatedUser: UserProps) => {
+        setUsers(prevUsers => prevUsers.map(user => 
+            user.id === updatedUser.id ? updatedUser : user
+        ));
+    };
+
+    const addUser = (newUser: UserProps) => {
+        setUsers(prevUsers => [...prevUsers, newUser]);
+    };
+
+    const deleteUser = (userId: string) => {
+        setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+    };
+
     const columns : ColumnsType<UserProps> = [
         { title: 'UserId', dataIndex: 'id', key: 'id' },
         { 
@@ -74,8 +90,14 @@ const UserManager: React.FC<UserManagerProps> = ({ usersData }) => {
             key: 'action',
             render: (user : UserProps) => (
                 <div>
-                    <UpdateUserDrawer userData = { user } />
-                    <DeleteUserButton userData = { user } />
+                    <UpdateUserDrawer 
+                        userData={user} 
+                        onUpdateSuccess={updateUsersList} 
+                    />
+                    <DeleteUserButton 
+                        userData={user} 
+                        onDeleteSuccess={() => deleteUser(user.id)} 
+                    />
                 </div>
             )
             ,
@@ -95,7 +117,7 @@ const UserManager: React.FC<UserManagerProps> = ({ usersData }) => {
             <Table
                 columns={columns}
                 onChange={onChange}
-                dataSource={usersData}
+                dataSource={users}
                 bordered
             />
         </div>

@@ -179,6 +179,9 @@ const AddNewUser: React.FC = () => {
                                 >
                                     <Option value="client">Client</Option>
                                     <Option value="admin">Admin</Option>
+                                    <Option value="shipper">Shipper</Option>
+                                    <Option value="manager">Manager</Option>
+                                    
                                 </Select>
                             </Form.Item>
                         </Col>

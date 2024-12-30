@@ -4,11 +4,12 @@ import { QuestionCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Popconfirm, Button, message } from 'antd';
 import { UserProps } from '../../../interfaces/UserInterfaces';
 
-interface ThisProps {
+interface DeleteUserButtonProps {
     userData: UserProps;
+    onDeleteSuccess: () => void;
 }
 
-const DeleteUserButton: React.FC<ThisProps> = ({ userData }) => {
+const DeleteUserButton: React.FC<DeleteUserButtonProps> = ({ userData, onDeleteSuccess }) => {
     const [open, setOpen] = useState(false);
     const [confirmLoading, setConfirmLoading] = useState(false);
 
@@ -26,6 +27,7 @@ const DeleteUserButton: React.FC<ThisProps> = ({ userData }) => {
             .then((response) => {
                 console.log(response);
                 message.success('User deleted');
+                onDeleteSuccess();
             })
             .catch((err) => {
                 message.error('Error while deleting user');
