@@ -12,6 +12,8 @@ const PaymentPage = () => {
     const [orderData, setOrderData] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
+    const [discountAmount, setDiscountAmount] = useState(0);
+    const [appliedDiscountCode, setAppliedDiscountCode] = useState<string | null>(null);
 
     useEffect(() => {
         const savedOrder = localStorage.getItem('pendingOrder');
@@ -131,6 +133,69 @@ const PaymentPage = () => {
         }
     };
 
+    const getDiscount = async (code: string) => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/discounts/${encodeURIComponent(code)}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('Mã giảm giá không hợp lệ');
+            }
+
+            const discount = await response.json();
+            if (!discount) {
+                throw new Error('Không tìm thấy mã giảm giá');
+            }
+
+            // Calculate discount amount based on discount type
+            const discountAmount = discount.type === 'PERCENTAGE' 
+                ? (orderData.totalAmount * discount.value / 100)
+                : discount.value;
+
+            // Apply max discount amount if specified
+            return discount.maxDiscountAmount && discountAmount > discount.maxDiscountAmount 
+                ? discount.maxDiscountAmount 
+                : discountAmount;
+
+        } catch (error) {
+            console.error('Error getting discount:', error);
+            throw error;
+        }
+    };
+
+    const handleApplyDiscount = async (code: string) => {
+        if (!code) {
+            notification.error({
+                message: 'Lỗi',
+                description: 'Vui lòng nhập mã giảm giá'
+            });
+            return;
+        }
+
+        try {
+            const discountValue = await getDiscount(code);
+            setDiscountAmount(discountValue);
+            setAppliedDiscountCode(code);
+            notification.success({
+                message: 'Thành công',
+                description: `Đã áp dụng mã giảm giá: ${new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                }).format(discountValue)}`
+            });
+        } catch (error) {
+            notification.error({
+                message: 'Lỗi',
+                description: error instanceof Error ? error.message : 'Không thể áp dụng mã giảm giá'
+            });
+        }
+    };
+
     const handleSubmit = async (values: any) => {
         try {
             setIsSubmitting(true);
@@ -145,7 +210,10 @@ const PaymentPage = () => {
                 cardNumber: values.paymentMethod === 'CARD' ? values.cardNumber : null,
                 cardHolder: values.paymentMethod === 'CARD' ? values.cardHolder : null,
                 status: 'PENDING',
-                user: { id: userId }  // Add user information
+                user: { id: userId },  // Add user information
+                discountCode: appliedDiscountCode,
+                discountAmount: discountAmount,
+                finalAmount: orderData.totalAmount - discountAmount,
             };
 
             const orderResponse = await fetch('http://localhost:8080/api/orders/create', {
@@ -213,7 +281,7 @@ const PaymentPage = () => {
                 description: 'Your cart has been cleared'
             });
 
-            router.push('/order-success');
+            router.push('/'); // Changed from '/order-success' to '/'
         } catch (error) {
             console.error('Error details:', error);
             notification.error({
@@ -244,6 +312,24 @@ const PaymentPage = () => {
                             layout="vertical"
                             onFinish={handleSubmit}
                         >
+                            {/* Add discount code section */}
+                            <div className="mb-6">
+                                <h3 className="text-lg font-semibold mb-4">Mã giảm giá</h3>
+                                <div className="flex gap-2">
+                                    <Form.Item
+                                        name="discountCode"
+                                        className="flex-1"
+                                    >
+                                        <Input placeholder="Nhập mã giảm giá" />
+                                    </Form.Item>
+                                    <Button 
+                                        onClick={() => handleApplyDiscount(form.getFieldValue('discountCode'))}
+                                    >
+                                        Áp dụng
+                                    </Button>
+                                </div>
+                            </div>
+
                             <h3 className="text-lg font-semibold mb-4">Phương thức thanh toán</h3>
                             <Form.Item
                                 name="paymentMethod"
@@ -297,6 +383,26 @@ const PaymentPage = () => {
                                             style: 'currency',
                                             currency: 'VND'
                                         }).format(orderData.totalAmount)}
+                                    </span>
+                                </div>
+                                {discountAmount > 0 && (
+                                    <div className="flex justify-between mb-2 text-green-600">
+                                        <span>Giảm giá:</span>
+                                        <span className="font-semibold">
+                                            -{new Intl.NumberFormat('vi-VN', {
+                                                style: 'currency',
+                                                currency: 'VND'
+                                            }).format(discountAmount)}
+                                        </span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between mb-4 text-lg font-bold">
+                                    <span>Tổng thanh toán:</span>
+                                    <span>
+                                        {new Intl.NumberFormat('vi-VN', {
+                                            style: 'currency',
+                                            currency: 'VND'
+                                        }).format(orderData.totalAmount - discountAmount)}
                                     </span>
                                 </div>
                                 <Button
