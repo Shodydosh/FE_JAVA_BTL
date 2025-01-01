@@ -25,3 +25,71 @@ body {
         )
         rgb(var(--background-start-rgb));
 }
+
+.login-form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    @apply space-y-4;
+}
+
+.ant-input-affix-wrapper {
+    @apply transition-all duration-300 hover:border-blue-500 focus:border-blue-500;
+}
+
+.ant-btn-primary {
+    @apply bg-gradient-to-r from-blue-500 to-purple-600 border-0 hover:opacity-90 
+    transition-all duration-300 transform hover:-translate-y-0.5;
+}
+
+.ant-checkbox-wrapper:hover .ant-checkbox-inner {
+    @apply border-blue-500;
+}
+
+.ant-form-item-label > label {
+    @apply text-gray-700 font-medium;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-primary {
+    color: #1890ff;
+    @apply text-blue-500 hover:text-blue-600 transition-colors duration-300;
+}
+
+.text-gray-500 {
+    color: #6b7280;
+}
+
+.flex {
+    display: flex;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.login-form .ant-form-item {
+    animation: fadeIn 0.5s ease-out forwards;
+    opacity: 0;
+}
+
+.login-form .ant-form-item:nth-child(1) { animation-delay: 0.1s; }
+.login-form .ant-form-item:nth-child(2) { animation-delay: 0.2s; }
+.login-form .ant-form-item:nth-child(3) { animation-delay: 0.3s; }
+.login-form .ant-form-item:nth-child(4) { animation-delay: 0.4s; }
+.login-form .ant-form-item:nth-child(5) { animation-delay: 0.5s; }

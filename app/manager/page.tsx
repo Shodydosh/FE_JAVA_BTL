@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useEffect } from 'react'
-import { UserOutlined, LaptopOutlined, BarChartOutlined } from '@ant-design/icons';
+import { UserOutlined, LaptopOutlined, BarChartOutlined, TagOutlined } from '@ant-design/icons';
 import { Layout, Menu } from 'antd';
 const { Content, Sider } = Layout;
 import type { MenuProps } from 'antd';
@@ -12,6 +12,7 @@ import ProductManager from '../../components/Admin/Product/ProductManager';
 import AddNewUser from '../../components/Admin/User/AddNewUser';
 import AddProductButton from '../../components/Admin/Product/AddProductButton';
 import StatisticsManager from '../../components/Admin/Statistics/StatisticsManager';
+import DiscountManager from '../../components/Admin/Discount/DiscountManager';
 
 function getItem(
   label: React.ReactNode,
@@ -30,6 +31,7 @@ function getItem(
 const items: MenuItem[] = [
   getItem('Người dùng', 'user', <UserOutlined />),
   getItem('Sản phẩm', 'product', <LaptopOutlined />),
+  getItem('Giảm giá', 'discount', <TagOutlined />),
   getItem('Thống kê', 'statistics', <BarChartOutlined />),
 ];
 
@@ -38,6 +40,7 @@ const ManagerPage = () => {
   const [selectedMenuItem, setSelectedMenuItem] = useState('user');
   const [usersData, setUsersData] = useState([]);
   const [productsData, setProductsData] = useState([]);
+  const [discountsData, setDiscountsData] = useState([]);
   const [statisticsData, setStatisticsData] = useState({
     totalUsers: 0,
     totalProducts: 0,
@@ -79,11 +82,19 @@ const ManagerPage = () => {
         .then(response => {
           if (!response.ok) throw new Error('Failed to fetch products');
           return response.json();
+        }),
+      
+      // Fetch discounts data
+      fetch(apiUrl + 'discount')
+        .then(response => {
+          if (!response.ok) throw new Error('Failed to fetch discounts');
+          return response.json();
         })
     ])
-    .then(([userData, productData]) => {
+    .then(([userData, productData, discountData]) => {
       setUsersData(userData);
       setProductsData(productData);
+      setDiscountsData(discountData);
       setIsLoading(false);
     })
     .catch(error => {
@@ -130,6 +141,12 @@ const ManagerPage = () => {
                   <AddProductButton />
                 </div>
                 <ProductManager productsData={productsData} />
+              </div>
+            )}
+            {selectedMenuItem === "discount" && (
+              <div>
+               
+                <DiscountManager discountsData={discountsData} />
               </div>
             )}
             {selectedMenuItem === "statistics" && (
