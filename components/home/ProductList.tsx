@@ -30,8 +30,8 @@ const ProductList = (props: any) => {
   const [priceRange, setPriceRange] = useState('all');
   const [sortOrder, setSortOrder] = useState('none');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(8); // Changed from const to state
-  const [showDiscounted, setShowDiscounted] = useState(false);
+  const [itemsPerPage, setItemsPerPage] = useState(32); // Changed from 8 to 32
+  // Removed showDiscounted state
 
   // Get unique categories
   const categories = useMemo(() => {
@@ -49,7 +49,7 @@ const ProductList = (props: any) => {
       
       const matchCategory = selectedCategory === 'all' || product.category === selectedCategory;
       let matchPrice = true;
-      const matchDiscount = !showDiscounted || (product.discountCode && product.discountValue > 0);
+      const matchDiscount = true; // Removed discount filtering
 
       switch (priceRange) {
         case 'under5m':
@@ -79,7 +79,7 @@ const ProductList = (props: any) => {
     }
 
     return filtered;
-  }, [productData, selectedCategory, priceRange, sortOrder, showDiscounted]);
+  }, [productData, selectedCategory, priceRange, sortOrder]);
 
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -104,76 +104,68 @@ const ProductList = (props: any) => {
           <PromotionSlider />
 
           {/* Filters Section */}
-          <Card
-              className="mb-8 rounded-lg shadow-sm"
-              title={
-                  <Space>
-                      <FilterOutlined className="text-primary" />
-                      <Text strong>Bộ lọc tìm kiếm</Text>
-                  </Space>
-              }
-          >
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                  {/* Category Filter */}
-                  <div className="flex flex-col space-y-2">
-                      <Text strong>Danh mục:</Text>
-                      <Select
-                          className="w-full"
-                          value={selectedCategory}
-                          onChange={setSelectedCategory}
-                      >
-                          {categories.map((cat) => (
-                              <Option key={cat} value={cat}>
-                                  {cat === 'all' ? 'Tất cả' : cat}
-                              </Option>
-                          ))}
-                      </Select>
+          <div className="mb-8 bg-white rounded-lg shadow-sm overflow-hidden">
+              <div className="p-6 border-b border-gray-100">
+                  <div className="flex items-center gap-2 mb-6">
+                      <FilterOutlined className="text-primary text-xl" />
+                      <Text className="text-lg font-semibold">Bộ lọc tìm kiếm</Text>
                   </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                      {/* Category Filter */}
+                      <div className="filter-group">
+                          <Text className="block mb-3 font-medium text-gray-700">Danh mục sản phẩm</Text>
+                          <Select
+                              className="w-full"
+                              value={selectedCategory}
+                              onChange={setSelectedCategory}
+                              size="large"
+                              placeholder="Chọn danh mục"
+                          >
+                              {categories.map((cat) => (
+                                  <Option key={cat} value={cat}>
+                                      {cat === 'all' ? 'Tất cả danh mục' : cat}
+                                  </Option>
+                              ))}
+                          </Select>
+                      </div>
 
-                  {/* Price Range Filter */}
-                  <div className="flex flex-col space-y-2">
-                      <Text strong>Khoảng giá:</Text>
-                      <Select
-                          className="w-full"
-                          value={priceRange}
-                          onChange={setPriceRange}
-                      >
-                          <Option value="all">Tất cả</Option>
-                          <Option value="under5m">Dưới 5 triệu</Option>
-                          <Option value="5m-10m">5 - 10 triệu</Option>
-                          <Option value="10m-20m">10 - 20 triệu</Option>
-                          <Option value="over20m">Trên 20 triệu</Option>
-                      </Select>
-                  </div>
+                      {/* Price Range Filter */}
+                      <div className="filter-group">
+                          <Text className="block mb-3 font-medium text-gray-700">Khoảng giá</Text>
+                          <Select
+                              className="w-full"
+                              value={priceRange}
+                              onChange={setPriceRange}
+                              size="large"
+                              placeholder="Chọn khoảng giá"
+                          >
+                              <Option value="all">Tất cả mức giá</Option>
+                              <Option value="under5m">Dưới 5 triệu</Option>
+                              <Option value="5m-10m">5 - 10 triệu</Option>
+                              <Option value="10m-20m">10 - 20 triệu</Option>
+                              <Option value="over20m">Trên 20 triệu</Option>
+                          </Select>
+                      </div>
 
-                  {/* Sort Order */}
-                  <div className="flex flex-col space-y-2">
-                      <Text strong>Sắp xếp theo giá:</Text>
-                      <Select
-                          className="w-full"
-                          value={sortOrder}
-                          onChange={setSortOrder}
-                      >
-                          <Option value="none">Mặc định</Option>
-                          <Option value="asc">Giá tăng dần</Option>
-                          <Option value="desc">Giá giảm dần</Option>
-                      </Select>
-                  </div>
-
-                  {/* Discount Filter */}
-                  <div className="flex flex-col space-y-2">
-                      <Text strong>Khuyến mãi:</Text>
-                      <Select
-                          className="w-full"
-                          value={showDiscounted}
-                          onChange={setShowDiscounted}
-                      >
-                          <Option value={false}>Tất cả sản phẩm</Option>
-                          <Option value={true}>Chỉ sản phẩm khuyến mãi</Option>
-                      </Select>
+                      {/* Sort Order */}
+                      <div className="filter-group">
+                          <Text className="block mb-3 font-medium text-gray-700">Sắp xếp theo</Text>
+                          <Select
+                              className="w-full"
+                              value={sortOrder}
+                              onChange={setSortOrder}
+                              size="large"
+                              placeholder="Chọn cách sắp xếp"
+                          >
+                              <Option value="none">Mặc định</Option>
+                              <Option value="asc">Giá thấp đến cao</Option>
+                              <Option value="desc">Giá cao đến thấp</Option>
+                          </Select>
+                      </div>
                   </div>
               </div>
-          </Card>
+          </div>
 
           {/* Products Grid */}
           {filteredProducts.length === 0 ? (

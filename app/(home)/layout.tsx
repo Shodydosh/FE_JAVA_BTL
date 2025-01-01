@@ -7,16 +7,10 @@ const { Content } = Layout;
 
 export default function HomeLayout({ children }: { children: ReactNode }) {
     return (
-        <Layout>
+        <Layout className="min-h-screen">
             <Header />
-            <Content
-                style={{
-                    margin: 0,
-                    minHeight: '100vh',
-                    background: '#ffffff',
-                }}
-            >
-                {children}
+            <Content className="bg-gradient-to-b from-gray-50 to-white px-4 py-6 md:px-6 lg:px-8">
+                <div className="mx-auto max-w-[1440px]">{children}</div>
             </Content>
         </Layout>
     );

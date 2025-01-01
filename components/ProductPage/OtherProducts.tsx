@@ -3,16 +3,12 @@ import ProductCard from '../home/ProductCard';
 
 //@ts-ignore
 const OtherProducts = ({ data }) => {
-    console.log(
-        '🚀 ~ file: OtherProducts.tsx:6 ~ OtherProducts ~ otherProducts:',
-        data,
-    );
     return (
-        <div className="flex w-full space-x-4 ">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
             {data &&
                 //@ts-ignore
                 data.map((element) => (
-                    <div className="h-full w-1/5" key={element.id}>
+                    <div className="w-full" key={element.id}>
                         <ProductCard data={element}></ProductCard>
                     </div>
                 ))}

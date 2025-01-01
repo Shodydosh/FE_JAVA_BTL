@@ -2,10 +2,9 @@
 import React from 'react';
 import { EllipsisOutlined, ShoppingCartOutlined, HeartOutlined } from '@ant-design/icons';
 import { Card, Typography, Badge, Tag, Space } from 'antd';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-const { Text, Link, Title } = Typography;
+const { Text, Title } = Typography;
 const { Meta } = Card;
 
 const formatPrice = (price: string | number): string => {
@@ -61,77 +60,100 @@ const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
     };
 
     return (
-        <Badge.Ribbon text={SALE_BADGE} color="red">
+        <div className="relative">
+            {/* Custom Badge instead of Badge.Ribbon */}
+            <div className="
+                absolute -top-1 -right-1 z-10
+                bg-gradient-to-r from-blue-400 to-blue-500
+                text-white text-sm font-medium
+                px-3 py-1.5
+                rounded-bl-xl rounded-tr-xl
+                shadow-md
+                transform rotate-0
+                transition-transform duration-300
+                hover:scale-105
+                flex items-center gap-1
+            ">
+                <span className="animate-pulse">🔥</span>
+                SALE 10%
+            </div>
             <Card
                 hoverable
-                style={{
-                    height: '100%',
-                    borderRadius: 12,
-                    overflow: 'hidden',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                    transition: 'all 0.3s ease'
-                }}
-                onClick={() => router.push(`/product/${data.id}`)}  // Add this line
+                className="
+                    h-full rounded-xl overflow-hidden
+                    bg-gradient-to-br from-white to-blue-50
+                    hover:shadow-lg hover:-translate-y-1
+                    transition-all duration-300 ease-in-out
+                    border border-blue-100
+                "
+                onClick={() => router.push(`/product/${data.id}`)}
                 cover={
-                    <div style={{
-                        height: 200,
-                        overflow: 'hidden',
-                        position: 'relative',
-                        display: 'flex',         // Add this
-                        justifyContent: 'center', // Add this
-                        alignItems: 'center'      // Add this
-                    }}>
+                    <div className="
+                        h-48 overflow-hidden relative
+                        flex justify-center items-center
+                        bg-gradient-to-t from-blue-50 to-white
+                        p-4
+                    ">
                         <img
                             alt={data.name}
                             src={data.img_url}
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'contain',  // Change from 'cover' to 'contain'
-                                transition: 'transform 0.3s ease'
-                            }}
-                            onMouseOver={(e) => {
-                                e.currentTarget.style.transform = 'scale(1.1)';
-                            }}
-                            onMouseOut={(e) => {
-                                e.currentTarget.style.transform = 'scale(1)';
-                            }}
+                            className="
+                                w-full h-full object-contain
+                                transition-transform duration-300 ease-in-out
+                                hover:scale-110
+                            "
                         />
                     </div>
                 }
                 actions={[
-                    <HeartOutlined key="heart" />,
-                    <ShoppingCartOutlined key="cart" onClick={() => router.push(`/product/${data.id}`)} />
+                    <HeartOutlined key="heart" className="text-blue-400 text-lg hover:text-blue-600 transition-colors" />,
+                    <ShoppingCartOutlined key="cart" 
+                        className="text-blue-400 text-lg hover:text-blue-600 transition-colors"
+                        onClick={() => router.push(`/product/${data.id}`)} 
+                    />
                 ]}
             >
                 <Meta
                     title={
                         <Text
-                            style={{ fontSize: 16, fontWeight: 600 }}
-                            ellipsis={{ rows: 2 }}
+                            className="text-lg font-semibold text-gray-800 line-clamp-2"
                         >
                             {data.name}
                         </Text>
                     }
                     description={
-                        <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                        <Space direction="vertical" size={4} className="w-full">
                             {data.discountValue && data.discountCode && (
-                                <Tag color="red" className="mb-2">
-                                    Giảm {data.discountType === 'PERCENTAGE' ? `${data.discountValue}%` : `${data.discountValue.toLocaleString()}đ`}
+                                <Tag 
+                                    className="
+                                        mb-2 bg-gradient-to-r from-blue-500 to-blue-400 
+                                        text-white border-none px-3 py-1
+                                    "
+                                >
+                                    Giảm {data.discountType === 'PERCENTAGE' ? 
+                                        `${data.discountValue}%` : 
+                                        `${data.discountValue.toLocaleString()}đ`
+                                    }
                                 </Tag>
                             )}
-                            <div>
+                            <div className="mt-2">
                                 {data.discountValue ? (
-                                    <div>
-                                        <Text delete type="secondary" style={{ fontSize: 14 }}>
+                                    <div className="space-y-1">
+                                        <Text delete type="secondary" className="text-sm">
                                             {formatPrice(originalPrice)}
                                         </Text>
-                                        <Title level={4} className='!text-blue-400'>
+                                        <Title 
+                                            level={4} 
+                                            className="!m-0 !text-blue-500 font-bold"
+                                        >
                                             {formatPrice(calculateDiscountedPrice())}
                                         </Title>
                                     </div>
                                 ) : (
-                                    <Title level={4} className='!text-blue-400'>
+                                    <Title 
+                                        level={4} 
+                                        className="!m-0 !text-blue-500 font-bold"
+                                    >
                                         {formatPrice(data.price)}
                                     </Title>
                                 )}
@@ -140,7 +162,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
                     }
                 />
             </Card>
-        </Badge.Ribbon>
+        </div>
     );
 };
 
