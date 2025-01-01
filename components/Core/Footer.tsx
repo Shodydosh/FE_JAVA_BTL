@@ -34,7 +34,7 @@ const FooterView = () => {
                             </Text>
                             <Text className="flex items-center font-medium text-gray-600">
                                 <PhoneOutlined className="mr-2 text-blue-500" />
-                                0987654321
+                                0397403808
                             </Text>
                             <Text className="flex items-center font-medium text-gray-600">
                                 <MailOutlined className="mr-2 text-blue-500" />

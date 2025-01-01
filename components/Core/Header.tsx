@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 import { useRouter } from 'next/navigation';
 
-import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
+import { ShoppingCartOutlined, UserOutlined, PhoneOutlined, EnvironmentOutlined } from '@ant-design/icons';
 
 import {
     Breadcrumb,
@@ -118,7 +118,19 @@ const Header = () => {
                 </div>
 
                 {/* Right section - User */}
-                <div className="flex items-center">
+                <div className="flex items-center gap-4">
+                    <div className="hidden md:flex items-center gap-4">
+                        <div className="flex items-center text-primary">
+                            <PhoneOutlined className="text-lg mr-1" />
+                            <span>Hotline: 1900-1234</span>
+                        </div>
+                        <Button 
+                            icon={<EnvironmentOutlined />}
+                            onClick={() => router.push('/store-locations')}
+                        >
+                            Cửa hàng
+                        </Button>
+                    </div>
                     <div className="ml-2">
                         {!hasUserId ? (
                             <Link href="/login" scroll={false}>
