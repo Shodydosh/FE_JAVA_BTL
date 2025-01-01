@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
-import { Form, Input, Button, message } from 'antd';
+import { Form, Input, Button, message, Card, Typography } from 'antd';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'; // Update this line
@@ -30,6 +31,7 @@ interface User {
 const AdminLogin = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const { Title } = Typography;
 
   const handleRedirect = (role: string) => {
     console.log('Redirecting with role:', role);
@@ -113,36 +115,62 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <Form
-        name="admin_login"
-        className="w-96 p-8 shadow-lg rounded"
-        onFinish={onFinish}
+    <div className="min-h-screen bg-gradient-to-r from-blue-100 to-blue-50 flex items-center justify-center p-4">
+      <Card 
+        className="w-full max-w-md shadow-2xl"
+        bordered={false}
       >
-        <h1 className="text-2xl mb-6 text-center">Admin Login</h1>
-        <Form.Item
-          name="email"
-          rules={[
-            { required: true, message: 'Please input your email!' },
-            { type: 'email', message: 'Please enter a valid email!' }
-          ]}
-        >
-          <Input placeholder="Email" />
-        </Form.Item>
+        <div className="text-center mb-8">
+          <Title level={2} className="!mb-2">Welcome Back</Title>
+          <Typography.Text className="text-gray-500">
+            Please sign in to your account
+          </Typography.Text>
+        </div>
 
-        <Form.Item
-          name="password"
-          rules={[{ required: true, message: 'Please input your password!' }]}
+        <Form
+          name="admin_login"
+          onFinish={onFinish}
+          layout="vertical"
+          size="large"
         >
-          <Input.Password placeholder="Password" />
-        </Form.Item>
+          <Form.Item
+            name="email"
+            rules={[
+              { required: true, message: 'Please input your email!' },
+              { type: 'email', message: 'Please enter a valid email!' }
+            ]}
+          >
+            <Input 
+              prefix={<UserOutlined className="text-gray-400" />}
+              placeholder="Email"
+              className="rounded-lg"
+            />
+          </Form.Item>
 
-        <Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading} block>
-            Log in
-          </Button>
-        </Form.Item>
-      </Form>
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: 'Please input your password!' }]}
+          >
+            <Input.Password 
+              prefix={<LockOutlined className="text-gray-400" />}
+              placeholder="Password"
+              className="rounded-lg"
+            />
+          </Form.Item>
+
+          <Form.Item className="mb-0">
+            <Button 
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              block
+              className="h-12 rounded-lg bg-blue-600 hover:bg-blue-700"
+            >
+              Sign In
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
     </div>
   );
 };
