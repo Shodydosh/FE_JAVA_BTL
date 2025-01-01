@@ -32,6 +32,8 @@ interface OrderData {
         quantity: number;
         price: number;
     }[];
+    originalAmount: number;
+    discountAmount: number;
     totalAmount: number;
     phoneNumber: string;
     shippingAddress: string;
@@ -192,6 +194,14 @@ const CartPage: React.FC = () => {
         );
     }, [groupedCartItems]);
 
+    const calcDiscountAmount = useMemo(() => {
+        return calcTotalPrice * 0.1; // 10% discount
+    }, [calcTotalPrice]);
+
+    const calcFinalPrice = useMemo(() => {
+        return calcTotalPrice - calcDiscountAmount;
+    }, [calcTotalPrice, calcDiscountAmount]);
+
     const calcTotalQuantity = useMemo(() => {
         return groupedCartItems.reduce(
             (total, item) => total + item.quantity,
@@ -255,7 +265,9 @@ const CartPage: React.FC = () => {
                     quantity: item.quantity,
                     price: item.price,
                 })),
-                totalAmount: calcTotalPrice,
+                originalAmount: calcTotalPrice,
+                discountAmount: calcDiscountAmount,
+                totalAmount: calcFinalPrice,
                 phoneNumber: values.phone,
                 shippingAddress: values.address,
                 customerName: values.fullName,
@@ -403,6 +415,15 @@ const CartPage: React.FC = () => {
                                             }).format(calcTotalPrice)}
                                         </Text>
                                     </div>
+                                    <div className="flex items-center justify-between text-red-500">
+                                        <Text>Giảm giá (10%)</Text>
+                                        <Text strong>
+                                            -{new Intl.NumberFormat('vi-VN', {
+                                                style: 'currency',
+                                                currency: 'VND',
+                                            }).format(calcDiscountAmount)}
+                                        </Text>
+                                    </div>
                                     <Divider style={{ margin: '12px 0' }} />
                                     <div className="flex items-center justify-between">
                                         <Text strong>Tổng tiền</Text>
@@ -410,7 +431,7 @@ const CartPage: React.FC = () => {
                                             {new Intl.NumberFormat('vi-VN', {
                                                 style: 'currency',
                                                 currency: 'VND',
-                                            }).format(calcTotalPrice)}
+                                            }).format(calcFinalPrice)}
                                         </Text>
                                     </div>
                                     <Button
@@ -486,7 +507,7 @@ const CartPage: React.FC = () => {
                                 {new Intl.NumberFormat('vi-VN', {
                                     style: 'currency',
                                     currency: 'VND',
-                                }).format(calcTotalPrice)}
+                                }).format(calcFinalPrice)}
                             </Text>
                         </div>
                     </Card>
