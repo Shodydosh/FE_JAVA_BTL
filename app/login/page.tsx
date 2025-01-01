@@ -74,7 +74,7 @@ const LoginPage: React.FC = () => {
                 </div>
 
                 {/* Right side - Login Form */}
-                <div className="transform rounded-xl bg-white p-8 shadow-2xl transition-transform duration-300 hover:scale-105">
+                <div className="transform rounded-xl bg-white p-8 shadow-2xl transition-transform duration-300">
                    
 
                     <Form
@@ -162,12 +162,12 @@ const LoginPage: React.FC = () => {
                         <Form.Item className="text-center">
                             <p className="text-gray-500">
                                 Chưa có tài khoản?{' '}
-                                <Link
-                                    href="/register"
-                                    className="font-medium text-blue-500 hover:text-blue-600"
+                                <span
+                                    onClick={() => router.push('/register')}
+                                    className="cursor-pointer font-medium text-blue-500 hover:text-blue-600"
                                 >
                                     Đăng ký ngay
-                                </Link>
+                                </span>
                             </p>
                         </Form.Item>
                     </Form>
