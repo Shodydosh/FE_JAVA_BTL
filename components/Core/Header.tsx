@@ -105,7 +105,7 @@ const Header = () => {
                     <div ref={searchRef} className="relative w-full pt-[2px]">
                         <Search
                             className="w-full !h-[32px]"
-                            placeholder="Search products..."
+                            placeholder="Tìm kiếm sản phẩm..."
                             onChange={(e) => searchHandler(e.target.value)}
                         />
                         {isOpenSearchResult && searchResults && (
@@ -122,7 +122,7 @@ const Header = () => {
                     <div className="hidden md:flex items-center gap-4">
                         <div className="flex items-center text-primary">
                             <PhoneOutlined className="text-lg mr-1" />
-                            <span>Hotline: 1900-1234</span>
+                            <span>Đường dây nóng: 1900-1234</span>
                         </div>
                         <Button 
                             icon={<EnvironmentOutlined />}
@@ -135,7 +135,7 @@ const Header = () => {
                         {!hasUserId ? (
                             <Link href="/login" scroll={false}>
                                 <Button type="primary">
-                                    Login
+                                    Đăng nhập
                                 </Button>
                             </Link>
                         ) : (

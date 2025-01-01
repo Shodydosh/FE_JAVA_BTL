@@ -101,7 +101,6 @@ const ProductList = (props: any) => {
   return (
       <div className="min-h-screen bg-gray-50 px-4 py-8 md:px-6 lg:px-8">
           {/* Add PromotionSlider at the top */}
-          <Banner />
           <PromotionSlider />
 
           {/* Filters Section */}
