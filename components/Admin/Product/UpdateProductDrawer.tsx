@@ -190,6 +190,8 @@ const UpdateProductDrawer: React.FC<ThisProps> = ({ productData }) => {
                                     <Option value="laptop">Laptop</Option>
                                     <Option value="phone">Phone</Option>
                                     <Option value="tablet">Tablet</Option>
+                                    <Option value="book">Book</Option>
+                                    <Option value="clothing">Clothing</Option>
                                 </Select>
                             </Form.Item>
                         </Col>
