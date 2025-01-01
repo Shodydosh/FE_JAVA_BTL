@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { Card, Select, Layout, Typography, Pagination, Row, Col, Space, Empty } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 import ProductCard from './ProductCard';
+import { useDiscounts } from '@/hooks/useDiscounts';
+import PromotionSlider from './PromotionSlider'; // Add this import
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -15,15 +17,20 @@ interface Product {
   price: string;
   url: string;
   category: string;
+  discountCode?: string;
+  discountValue?: number;
+  discountType?: 'FIXED_AMOUNT' | 'PERCENTAGE';
 }
 
 const ProductList = (props: any) => {
   const { productData } = props;
+  const { discounts } = useDiscounts();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [priceRange, setPriceRange] = useState('all');
   const [sortOrder, setSortOrder] = useState('none');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(8); // Changed from const to state
+  const [showDiscounted, setShowDiscounted] = useState(false);
 
   // Get unique categories
   const categories = useMemo(() => {
@@ -31,7 +38,7 @@ const ProductList = (props: any) => {
     return ['all', ...Array.from(cats)];
   }, [productData]);
 
-  // Update filteredProducts to include sorting
+  // Update filteredProducts to include discount filtering
   const filteredProducts = useMemo(() => {
     if (!productData) return [];
     
@@ -41,6 +48,7 @@ const ProductList = (props: any) => {
       
       const matchCategory = selectedCategory === 'all' || product.category === selectedCategory;
       let matchPrice = true;
+      const matchDiscount = !showDiscounted || (product.discountCode && product.discountValue > 0);
 
       switch (priceRange) {
         case 'under5m':
@@ -57,7 +65,7 @@ const ProductList = (props: any) => {
           break;
       }
 
-      return matchCategory && matchPrice;
+      return matchCategory && matchPrice && matchDiscount;
     });
 
     // Add sorting
@@ -70,7 +78,7 @@ const ProductList = (props: any) => {
     }
 
     return filtered;
-  }, [productData, selectedCategory, priceRange, sortOrder]);
+  }, [productData, selectedCategory, priceRange, sortOrder, showDiscounted]);
 
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -91,7 +99,8 @@ const ProductList = (props: any) => {
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8 md:px-6 lg:px-8">
-      
+      {/* Add PromotionSlider at the top */}
+      <PromotionSlider />
 
       {/* Filters Section */}
       <Card 
@@ -103,7 +112,7 @@ const ProductList = (props: any) => {
           </Space>
         }
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Category Filter */}
           <div className="flex flex-col space-y-2">
             <Text strong>Danh mục:</Text>
@@ -147,6 +156,19 @@ const ProductList = (props: any) => {
               <Option value="none">Mặc định</Option>
               <Option value="asc">Giá tăng dần</Option>
               <Option value="desc">Giá giảm dần</Option>
+            </Select>
+          </div>
+
+          {/* Discount Filter */}
+          <div className="flex flex-col space-y-2">
+            <Text strong>Khuyến mãi:</Text>
+            <Select
+              className="w-full"
+              value={showDiscounted}
+              onChange={setShowDiscounted}
+            >
+              <Option value={false}>Tất cả sản phẩm</Option>
+              <Option value={true}>Chỉ sản phẩm khuyến mãi</Option>
             </Select>
           </div>
         </div>

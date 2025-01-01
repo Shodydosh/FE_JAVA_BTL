@@ -93,3 +93,32 @@ body {
 .login-form .ant-form-item:nth-child(3) { animation-delay: 0.3s; }
 .login-form .ant-form-item:nth-child(4) { animation-delay: 0.4s; }
 .login-form .ant-form-item:nth-child(5) { animation-delay: 0.5s; }
+
+/* Promotion Slider Styles */
+.promotion-slider .slick-track {
+  display: flex !important;
+  gap: 8px;
+  margin-left: 0;
+}
+
+.promotion-slider .slick-slide {
+  padding: 4px;
+  height: inherit !important;
+}
+
+.promotion-slider .slick-slide > div {
+  height: 100%;
+}
+
+.promotion-slider .slick-prev,
+.promotion-slider .slick-next {
+  z-index: 10;
+}
+
+.promotion-slider .slick-prev {
+  left: 10px;
+}
+
+.promotion-slider .slick-next {
+  right: 10px;
+}

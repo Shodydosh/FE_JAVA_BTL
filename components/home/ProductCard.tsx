@@ -32,6 +32,9 @@ interface ProductCardProps {
         price: string;
         url: string;
         category: string;
+        discountValue?: number;
+        discountType?: 'FIXED_AMOUNT' | 'PERCENTAGE';
+        discountCode?: string;
     };
 }
 
@@ -44,6 +47,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
         ? parseFloat(data.price.replace(/[^\d.,]/g, ''))
         : parseFloat(data.price);
     const originalPrice = actualPrice * 1.1;
+
+    const calculateDiscountedPrice = () => {
+        const originalPrice = parseFloat(data.price.replace(/[^0-9.-]+/g, '')) || 0;
+        if (!data.discountValue) return originalPrice;
+        
+        if (data.discountType === 'FIXED_AMOUNT') {
+            return originalPrice - data.discountValue;
+        } else if (data.discountType === 'PERCENTAGE') {
+            return originalPrice * (1 - data.discountValue / 100);
+        }
+        return originalPrice;
+    };
 
     return (
         <Badge.Ribbon text={SALE_BADGE} color="red">
@@ -100,14 +115,27 @@ const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
                     }
                     description={
                         <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                            {data.discountValue && data.discountCode && (
+                                <Tag color="red" className="mb-2">
+                                    Giảm {data.discountType === 'PERCENTAGE' ? `${data.discountValue}%` : `${data.discountValue.toLocaleString()}đ`}
+                                </Tag>
+                            )}
                             <div>
-                                <Text delete type="secondary" style={{ fontSize: 14 }}>
-                                    {formatPrice(originalPrice)}
-                                </Text>
+                                {data.discountValue ? (
+                                    <div>
+                                        <Text delete type="secondary" style={{ fontSize: 14 }}>
+                                            {formatPrice(originalPrice)}
+                                        </Text>
+                                        <Title level={4} className='!text-blue-400'>
+                                            {formatPrice(calculateDiscountedPrice())}
+                                        </Title>
+                                    </div>
+                                ) : (
+                                    <Title level={4} className='!text-blue-400'>
+                                        {formatPrice(data.price)}
+                                    </Title>
+                                )}
                             </div>
-                            <Title level={4} className='!text-blue-400'>
-                                {formatPrice(data.price)}
-                            </Title>
                         </Space>
                     }
                 />
