@@ -232,7 +232,7 @@ const getCartId = async (userId: string) => {
         {
             key: 'name',
             children: (
-                <h1 className="mb-2 text-2xl font-bold text-gray-800">
+                <h1 className="mb-2 text-3xl font-bold text-gray-800">
                     {productData?.name}
                 </h1>
             ),
@@ -245,7 +245,7 @@ const getCartId = async (userId: string) => {
                     <Rate
                         disabled
                         value={productData.averageRating}
-                        className="text-yellow-400"
+                        className="text-blue-400"
                     />
                     <span className="text-gray-600">
                         ({productData.totalRatings} đánh giá)
@@ -257,39 +257,53 @@ const getCartId = async (userId: string) => {
         {
             key: 'price',
             children: productData?.price ? (
-                <div className="mb-4">
-                    <div className="text-3xl font-bold text-red-600">
-                        {productData.price.toLocaleString('vi-VN')} ₫
-                    </div>
-                    <div className="text-lg text-gray-500 line-through">
-                        {(productData.price * 1.1).toLocaleString('vi-VN')} ₫
-                    </div>
-                    <div className="text-sm text-green-600">
-                        Tiết kiệm {(productData.price * 0.1).toLocaleString('vi-VN')} ₫
+                <div className="mb-4 bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="text-3xl font-bold text-blue-600">
+                                {productData.price.toLocaleString('vi-VN')} ₫
+                            </div>
+                            <div className="flex flex-col">
+                                <div className="text-base text-gray-500 line-through">
+                                    {(productData.price * 1.1).toLocaleString('vi-VN')} ₫
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex flex-col items-center">
+                            <div className="text-base bg-red-600 text-white px-4 py-2 rounded-lg font-bold shadow-sm hover:scale-105 transition-transform">
+                                GIẢM 10%
+                            </div>
+                            <div className="mt-1 text-sm text-red-600 font-medium">
+                                Tiết kiệm {(productData.price * 0.1).toLocaleString('vi-VN')}₫
+                            </div>
+                        </div>
                     </div>
                 </div>
-            ) : (
-                ''
-            ),
+            ) : null,
             span: 3,
         },
         {
             key: 'promotions',
             children: (
-                <div className="mb-4">
-                    <h3 className="font-semibold text-red-600 mb-2">Khuyến mãi đặc biệt</h3>
+                <div className="mb-4 bg-gradient-to-r from-blue-50 to-white p-4 rounded-lg border-l-4 border-blue-600">
+                    <div className="flex items-center gap-2 mb-3">
+                        <h3 className="font-bold text-blue-700">Ưu đãi đặc biệt</h3>
+                        <div className="px-2 py-0.5 bg-red-600 text-white rounded text-xs font-medium">
+                            HOT
+                        </div>
+                    </div>
                     <ul className="space-y-2">
                         <li className="flex items-center gap-2">
-                            <span className="inline-block w-5 h-5 bg-red-600 text-white rounded-full text-center text-sm">1</span>
-                            <span>Giảm ngay 10% cho khách hàng mua online</span>
+                            <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">1</div>
+                            <span className="text-gray-700">Giảm ngay 10% khi mua online</span>
                         </li>
                         <li className="flex items-center gap-2">
-                            <span className="inline-block w-5 h-5 bg-red-600 text-white rounded-full text-center text-sm">2</span>
-                            <span>Tặng phiếu mua hàng trị giá 500.000đ</span>
+                            <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">2</div>
+                            <span className="text-gray-700">Tặng phiếu mua hàng 500.000đ</span>
                         </li>
                         <li className="flex items-center gap-2">
-                            <span className="inline-block w-5 h-5 bg-red-600 text-white rounded-full text-center text-sm">3</span>
-                            <span>Miễn phí giao hàng toàn quốc</span>
+                            <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">3</div>
+                            <span className="text-gray-700">Miễn phí giao hàng toàn quốc</span>
                         </li>
                     </ul>
                 </div>
@@ -299,12 +313,14 @@ const getCartId = async (userId: string) => {
     ];
 
     return (
-        <div className="container mx-auto bg-gray-100 p-8">
-            <div className="grid grid-cols-1 gap-8 rounded-xl bg-white p-8 shadow-lg border-2 border-gray-200 lg:grid-cols-2">
+        <div className="container mx-auto max-w-7xl p-4">
+            <div className="grid grid-cols-1 gap-8 rounded-xl bg-white p-6 shadow-lg border border-blue-100 lg:grid-cols-2">
                 {/* Product Image Section */}
-                <div className="relative h-[500px] overflow-hidden rounded-xl border-2 border-gray-100 p-4 bg-white shadow-sm">
-                    <div className="absolute top-4 left-4 z-10 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                        Giảm 10%
+                <div className="relative h-[400px] overflow-hidden rounded-xl border-2 border-blue-100 p-4 bg-white">
+                    <div className="absolute top-4 left-4 z-10">
+                        <div className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm">
+                            GIẢM GIÁ 10%
+                        </div>
                     </div>
                     <Image
                         src={productData?.img_url || ''}
@@ -315,7 +331,7 @@ const getCartId = async (userId: string) => {
                 </div>
 
                 {/* Product Info Section */}
-                <div className="flex flex-col divide-y divide-gray-200">
+                <div className="flex flex-col divide-y divide-blue-100">
                     <Descriptions
                         bordered={false}
                         column={1}
@@ -324,25 +340,27 @@ const getCartId = async (userId: string) => {
                     />
 
                     {/* Action Buttons */}
-                    <div className="mt-6 space-y-4">
+                    <div className="mt-6 space-y-4 pt-6">
                         <Button
-                            className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 text-lg font-semibold text-white hover:bg-blue-700"
+                            className="flex h-14 w-full items-center justify-center gap-3 rounded-lg bg-blue-600 text-lg font-bold text-white hover:bg-blue-700 transition-all"
                             onClick={() => addToCart(productData)}
                         >
-                            <ShoppingCartOutlined />
+                            <ShoppingCartOutlined className="text-xl" />
                             Thêm vào giỏ hàng
                         </Button>
-                        <div className="flex items-center justify-center gap-2 text-gray-600">
+                        <div className="flex items-center justify-center gap-3 text-gray-600 bg-blue-50 py-3 rounded-lg">
                             <span className="text-2xl">📞</span>
-                            <span>Gọi đặt mua: 1800.1060 (7:30 - 22:00)</span>
+                            <span className="font-medium">Gọi đặt mua: 1800.1060 (7:30 - 22:00)</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Rating Section */}
-            <div className="mt-8 rounded-xl bg-white p-8 shadow-lg border-2 border-gray-200">
-                <h2 className="mb-6 text-2xl font-bold border-b-2 border-gray-200 pb-4">Đánh giá sản phẩm</h2>
+            <div className="mt-8 rounded-xl bg-white p-8 shadow-lg border border-blue-100">
+                <h2 className="mb-6 text-2xl font-bold text-blue-800 border-b-2 border-blue-100 pb-4">
+                    Đánh giá sản phẩm
+                </h2>
 
                 {/* Rating Form */}
                 <div className="mb-8 rounded-lg bg-gray-50 p-6 border border-gray-200">
@@ -425,8 +443,8 @@ const getCartId = async (userId: string) => {
 
             {/* Related Products */}
             {!isLoading && otherProducts.length > 0 && (
-                <div className="mt-8 rounded-xl bg-white p-8 shadow-lg border-2 border-gray-200">
-                    <h2 className="mb-6 text-2xl font-bold border-b-2 border-gray-200 pb-4">
+                <div className="mt-8 rounded-xl bg-white p-8 shadow-lg border border-blue-100">
+                    <h2 className="mb-6 text-2xl font-bold text-blue-800 border-b-2 border-blue-100 pb-4">
                         Sản phẩm tương tự
                     </h2>
                     <OtherProducts data={otherProducts} />
