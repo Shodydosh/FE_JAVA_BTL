@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 import { useRouter } from 'next/navigation';
 
-import { ShoppingCartOutlined } from '@ant-design/icons';
+import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 
 import {
     Breadcrumb,
@@ -117,24 +117,8 @@ const Header = () => {
                     </div>
                 </div>
 
-                {/* Right section - Cart & User */}
-                <div className="flex items-center gap-4">
-                    <Badge count={3} size="small">
-                        <Button
-                            className="flex items-center justify-center border-none shadow-none hover:bg-gray-50"
-                            icon={
-                                <Image
-                                    src={bluecart}
-                                    width={20}
-                                    height={20}
-                                    alt="Shopping Cart"
-                                    className="object-contain"
-                                />
-                            }
-                            onClick={handleNavigation}
-                        />
-                    </Badge>
-
+                {/* Right section - User */}
+                <div className="flex items-center">
                     <div className="ml-2">
                         {!hasUserId ? (
                             <Link href="/login" scroll={false}>
@@ -146,6 +130,17 @@ const Header = () => {
                             <Dropdown
                                 menu={{
                                     items: [
+                                        {
+                                            label: 'Giỏ hàng',
+                                            key: 'cart',
+                                            icon: <ShoppingCartOutlined />,
+                                            onClick: () => router.push('/cart'),
+                                        },
+                                        {
+                                            label: 'Quản lý tài khoản',
+                                            key: 'manage-account',
+                                            onClick: () => router.push('/account-settings'),
+                                        },
                                         {
                                             label: 'Lịch sử đặt hàng',
                                             key: 'order-history',
@@ -161,7 +156,7 @@ const Header = () => {
                                 }}
                                 trigger={['click']}
                             >
-                                <Avatar className="cursor-pointer bg-primary">U</Avatar>
+                                <Avatar className="cursor-pointer bg-primary" icon={<UserOutlined />} />
                             </Dropdown>
                         )}
 
