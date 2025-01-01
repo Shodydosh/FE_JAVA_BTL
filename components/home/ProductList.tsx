@@ -4,6 +4,7 @@ import { FilterOutlined } from '@ant-design/icons';
 import ProductCard from './ProductCard';
 import { useDiscounts } from '@/hooks/useDiscounts';
 import PromotionSlider from './PromotionSlider'; // Add this import
+import Banner from './Banner';
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -98,117 +99,118 @@ const ProductList = (props: any) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-8 md:px-6 lg:px-8">
-      {/* Add PromotionSlider at the top */}
-      <PromotionSlider />
+      <div className="min-h-screen bg-gray-50 px-4 py-8 md:px-6 lg:px-8">
+          {/* Add PromotionSlider at the top */}
+          <Banner />
+          <PromotionSlider />
 
-      {/* Filters Section */}
-      <Card 
-        className="mb-8 rounded-lg shadow-sm"
-        title={
-          <Space>
-            <FilterOutlined className="text-primary" />
-            <Text strong>Bộ lọc tìm kiếm</Text>
-          </Space>
-        }
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Category Filter */}
-          <div className="flex flex-col space-y-2">
-            <Text strong>Danh mục:</Text>
-            <Select
-              className="w-full"
-              value={selectedCategory}
-              onChange={setSelectedCategory}
-            >
-              {categories.map(cat => (
-                <Option key={cat} value={cat}>
-                  {cat === 'all' ? 'Tất cả' : cat}
-                </Option>
-              ))}
-            </Select>
-          </div>
+          {/* Filters Section */}
+          <Card
+              className="mb-8 rounded-lg shadow-sm"
+              title={
+                  <Space>
+                      <FilterOutlined className="text-primary" />
+                      <Text strong>Bộ lọc tìm kiếm</Text>
+                  </Space>
+              }
+          >
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                  {/* Category Filter */}
+                  <div className="flex flex-col space-y-2">
+                      <Text strong>Danh mục:</Text>
+                      <Select
+                          className="w-full"
+                          value={selectedCategory}
+                          onChange={setSelectedCategory}
+                      >
+                          {categories.map((cat) => (
+                              <Option key={cat} value={cat}>
+                                  {cat === 'all' ? 'Tất cả' : cat}
+                              </Option>
+                          ))}
+                      </Select>
+                  </div>
 
-          {/* Price Range Filter */}
-          <div className="flex flex-col space-y-2">
-            <Text strong>Khoảng giá:</Text>
-            <Select
-              className="w-full"
-              value={priceRange}
-              onChange={setPriceRange}
-            >
-              <Option value="all">Tất cả</Option>
-              <Option value="under5m">Dưới 5 triệu</Option>
-              <Option value="5m-10m">5 - 10 triệu</Option>
-              <Option value="10m-20m">10 - 20 triệu</Option>
-              <Option value="over20m">Trên 20 triệu</Option>
-            </Select>
-          </div>
+                  {/* Price Range Filter */}
+                  <div className="flex flex-col space-y-2">
+                      <Text strong>Khoảng giá:</Text>
+                      <Select
+                          className="w-full"
+                          value={priceRange}
+                          onChange={setPriceRange}
+                      >
+                          <Option value="all">Tất cả</Option>
+                          <Option value="under5m">Dưới 5 triệu</Option>
+                          <Option value="5m-10m">5 - 10 triệu</Option>
+                          <Option value="10m-20m">10 - 20 triệu</Option>
+                          <Option value="over20m">Trên 20 triệu</Option>
+                      </Select>
+                  </div>
 
-          {/* Sort Order */}
-          <div className="flex flex-col space-y-2">
-            <Text strong>Sắp xếp theo giá:</Text>
-            <Select
-              className="w-full"
-              value={sortOrder}
-              onChange={setSortOrder}
-            >
-              <Option value="none">Mặc định</Option>
-              <Option value="asc">Giá tăng dần</Option>
-              <Option value="desc">Giá giảm dần</Option>
-            </Select>
-          </div>
+                  {/* Sort Order */}
+                  <div className="flex flex-col space-y-2">
+                      <Text strong>Sắp xếp theo giá:</Text>
+                      <Select
+                          className="w-full"
+                          value={sortOrder}
+                          onChange={setSortOrder}
+                      >
+                          <Option value="none">Mặc định</Option>
+                          <Option value="asc">Giá tăng dần</Option>
+                          <Option value="desc">Giá giảm dần</Option>
+                      </Select>
+                  </div>
 
-          {/* Discount Filter */}
-          <div className="flex flex-col space-y-2">
-            <Text strong>Khuyến mãi:</Text>
-            <Select
-              className="w-full"
-              value={showDiscounted}
-              onChange={setShowDiscounted}
-            >
-              <Option value={false}>Tất cả sản phẩm</Option>
-              <Option value={true}>Chỉ sản phẩm khuyến mãi</Option>
-            </Select>
-          </div>
-        </div>
-      </Card>
+                  {/* Discount Filter */}
+                  <div className="flex flex-col space-y-2">
+                      <Text strong>Khuyến mãi:</Text>
+                      <Select
+                          className="w-full"
+                          value={showDiscounted}
+                          onChange={setShowDiscounted}
+                      >
+                          <Option value={false}>Tất cả sản phẩm</Option>
+                          <Option value={true}>Chỉ sản phẩm khuyến mãi</Option>
+                      </Select>
+                  </div>
+              </div>
+          </Card>
 
-      {/* Products Grid */}
-      {filteredProducts.length === 0 ? (
-        <Empty
-          description="Không tìm thấy sản phẩm nào"
-          className="my-12"
-        />
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
-          {paginatedProducts.map((product: Product) => (
-            <div 
-              key={product.id}
-              className="transform transition-transform duration-300 hover:-translate-y-2"
-            >
-              <ProductCard data={product} />
-            </div>
-          ))}
-        </div>
-      )}
+          {/* Products Grid */}
+          {filteredProducts.length === 0 ? (
+              <Empty
+                  description="Không tìm thấy sản phẩm nào"
+                  className="my-12"
+              />
+          ) : (
+              <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                  {paginatedProducts.map((product: Product) => (
+                      <div
+                          key={product.id}
+                          className="transform transition-transform duration-300 hover:-translate-y-2"
+                      >
+                          <ProductCard data={product} />
+                      </div>
+                  ))}
+              </div>
+          )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-8 bg-white rounded-lg shadow-sm p-4">
-          <Pagination
-            current={currentPage}
-            total={filteredProducts.length}
-            pageSize={itemsPerPage}
-            onChange={handlePageChange}
-            onShowSizeChange={handleSizeChange}
-            showSizeChanger={true}
-            showTotal={(total) => `Tổng ${total} sản phẩm`}
-            pageSizeOptions={['8', '16', '24', '32']}
-          />
-        </div>
-      )}
-    </div>
+          {/* Pagination */}
+          {totalPages > 1 && (
+              <div className="mt-8 flex justify-center rounded-lg bg-white p-4 shadow-sm">
+                  <Pagination
+                      current={currentPage}
+                      total={filteredProducts.length}
+                      pageSize={itemsPerPage}
+                      onChange={handlePageChange}
+                      onShowSizeChange={handleSizeChange}
+                      showSizeChanger={true}
+                      showTotal={(total) => `Tổng ${total} sản phẩm`}
+                      pageSizeOptions={['8', '16', '24', '32']}
+                  />
+              </div>
+          )}
+      </div>
   );
 };
 
