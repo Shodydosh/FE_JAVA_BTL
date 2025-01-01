@@ -24,10 +24,10 @@ const DeleteProductButton: React.FC<ThisProps> = ({ productData }) => {
             .delete(`${deleteApiUrl}/${productData.id}`)
             .then((response) => {
                 console.log(response);
-                message.success('product deleted');
+                message.success('Đã xóa sản phẩm thành công');
             })
             .catch((err) => {
-                message.error('Error while deleting product');
+                message.error('Có lỗi xảy ra khi xóa sản phẩm');
                 console.error(err);
             })
             .finally(() => {
@@ -44,10 +44,11 @@ const DeleteProductButton: React.FC<ThisProps> = ({ productData }) => {
         <Popconfirm
             placement="topRight"
             okType="danger"
-            title={`Delete product ${productData.id}`}
-            description="Open Popconfirm with async logic"
+            title={`Xóa sản phẩm ${productData.id}`}
+            description="Bạn có chắc chắn muốn xóa sản phẩm này?"
             open={open}
-            okText="Delete"
+            okText="Xóa"
+            cancelText="Hủy"
             onConfirm={handleOk}
             okButtonProps={{ loading: confirmLoading }}
             onCancel={handleCancel}

@@ -83,15 +83,15 @@ const UpdateUserDrawer: React.FC<UpdateUserDrawerProps> = ({ userData, onUpdateS
                 icon={<EditOutlined />}
             ></Button>
             <Drawer
-                title={`Update user ${userData.id}`}
+                title={`Cập nhật người dùng ${userData.id}`}
                 width={600}
                 onClose={onClose}
                 open={open}
                 extra={
                     <Space>
-                        <Button onClick={onClose}>Cancel</Button>
+                        <Button onClick={onClose}>Hủy</Button>
                         <Button onClick={handleSubmitForm} type="default">
-                            Update
+                            Cập nhật
                         </Button>
                     </Space>
                 }
@@ -101,11 +101,11 @@ const UpdateUserDrawer: React.FC<UpdateUserDrawerProps> = ({ userData, onUpdateS
                         <Col span={20}>
                             <Form.Item
                                 name="name"
-                                label="Name"
+                                label="Họ và tên"
                                 rules={[
                                     {
                                         required: true,
-                                        message: 'Please enter user name',
+                                        message: 'Vui lòng nhập họ tên',
                                     },
                                 ]}
                             >
@@ -126,11 +126,11 @@ const UpdateUserDrawer: React.FC<UpdateUserDrawerProps> = ({ userData, onUpdateS
                         <Col span={20}>
                             <Form.Item
                                 name="password"
-                                label="Password"
+                                label="Mật khẩu"
                                 rules={[
                                     {
                                         required: true,
-                                        message: 'Please enter password',
+                                        message: 'Vui lòng nhập mật khẩu',
                                     },
                                 ]}
                             >
@@ -156,7 +156,7 @@ const UpdateUserDrawer: React.FC<UpdateUserDrawerProps> = ({ userData, onUpdateS
                                 rules={[
                                     {
                                         required: true,
-                                        message: 'Please enter email',
+                                        message: 'Vui lòng nhập email',
                                     },
                                 ]}
                             >
@@ -178,11 +178,11 @@ const UpdateUserDrawer: React.FC<UpdateUserDrawerProps> = ({ userData, onUpdateS
                         <Col span={20}>
                             <Form.Item
                                 name="role"
-                                label="Role"
+                                label="Vai trò"
                                 rules={[
                                     {
                                         required: true,
-                                        message: 'Please select an role',
+                                        message: 'Vui lòng chọn vai trò',
                                     },
                                 ]}
                             >
@@ -196,10 +196,11 @@ const UpdateUserDrawer: React.FC<UpdateUserDrawerProps> = ({ userData, onUpdateS
                                         })
                                     }
                                 >
-                                    <Option value="client">Client</Option>
-                                    <Option value="admin">Admin</Option>
-                                    <Option value="shipper">Shipper</Option>
-                                    <Option value="manager">Manager</Option>
+                                    <Option value="client">Khách hàng</Option>
+                                    <Option value="admin">Quản trị viên</Option>
+                                    <Option value="shipper">Người giao hàng</Option>
+                                    <Option value="manager">Người quản lý</Option>
+                                    <Option value="saler"> Nhân viên bán hàng</Option>
                                 </Select>
                             </Form.Item>
                         </Col>

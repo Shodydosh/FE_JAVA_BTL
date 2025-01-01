@@ -25,9 +25,9 @@ const UserManager: React.FC<UserManagerProps> = ({ usersData }) => {
     };
 
     const columns : ColumnsType<UserProps> = [
-        { title: 'UserId', dataIndex: 'id', key: 'id' },
+        { title: 'Mã người dùng', dataIndex: 'id', key: 'id' },
         { 
-            title: 'Name', 
+            title: 'Họ tên', 
             dataIndex: 'name', 
             key: 'name',
             sorter: (a: UserProps, b: UserProps) => (a.name || '').localeCompare(b.name || ''),
@@ -39,25 +39,30 @@ const UserManager: React.FC<UserManagerProps> = ({ usersData }) => {
             onFilter: (value: React.Key | boolean, record: UserProps) => 
                 record.name?.includes(String(value)) || false
         },
-        { title: 'Role',
+        { 
+            title: 'Vai trò',
             dataIndex: 'role',
             filters: [
-                {
-                    text: 'admin',
-                    value: 'admin',
-                },
-                {
-                    text: 'client',
-                    value: 'client',
-                },
+                { text: 'Khách hàng', value: 'client' },
+                { text: 'Quản trị viên', value: 'admin' },
+                { text: 'Người giao hàng', value: 'shipper' },
+                { text: 'Người quản lý', value: 'manager' },
+                { text: 'Nhân viên bán hàng', value: 'saler' }
             ],
             onFilter: (value: React.Key | boolean, record : UserProps) => record.role === value,
             filterSearch: true,
-            render: (role : string | null) => (
-                role === "client" 
-                ? <Tag color="blue">{role}</Tag>
-                : <Tag color="red">{role}</Tag>
-                )
+            render: (role : string | null) => {
+                const roleConfig = {
+                    client: { color: 'blue', label: 'Khách hàng' },
+                    admin: { color: 'red', label: 'Quản trị viên' },
+                    shipper: { color: 'green', label: 'Người giao hàng' },
+                    manager: { color: 'purple', label: 'Người quản lý' },
+                    saler: { color: 'orange', label: 'Nhân viên bán hàng' }
+                };
+                
+                const config = role ? roleConfig[role as keyof typeof roleConfig] : { color: 'default', label: 'Unknown' };
+                return <Tag color={config.color}>{config.label}</Tag>;
+            }
         },
         { 
             title: 'Email', 
@@ -72,9 +77,9 @@ const UserManager: React.FC<UserManagerProps> = ({ usersData }) => {
             onFilter: (value: React.Key | boolean, record: UserProps) => 
                 record.email?.includes(String(value)) || false
         },
-        { title: 'Password', dataIndex: 'password', key: 'password' },
+        { title: 'Mật khẩu', dataIndex: 'password', key: 'password' },
         {
-            title: 'lastModifiedDate',
+            title: 'Ngày chỉnh sửa cuối',
             dataIndex: 'lastModifiedDate',
             sorter: {
                 compare: (a: UserProps, b: UserProps) => {
@@ -86,7 +91,7 @@ const UserManager: React.FC<UserManagerProps> = ({ usersData }) => {
             }
         },
         {
-            title: 'Action',
+            title: 'Thao tác',
             key: 'action',
             render: (user : UserProps) => (
                 <div>

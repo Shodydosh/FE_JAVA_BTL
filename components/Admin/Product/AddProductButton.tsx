@@ -32,7 +32,7 @@ const AddProductButton: React.FC = () => {
             formValues.img_url === '' ||
             formValues.price === ''
         ) {
-            message.error('Please fill in all required fields.');
+            message.error('Vui lòng điền vào tất cả các trường bắt buộc.');
             console.log(
                 '🚀 ~ file: AddProductButton.tsx:22 ~ handleSubmitForm ~ formValues:',
             );
@@ -64,18 +64,18 @@ const AddProductButton: React.FC = () => {
     return (
         <>
             <Button type="default" onClick={showDrawer} icon={<PlusOutlined />}>
-                New product
+                Thêm sản phẩm mới
             </Button>
             <Drawer
-                title={`Add new product`}
+                title={`Thêm sản phẩm mới`}
                 width={600}
                 onClose={onClose}
                 open={open}
                 extra={
                     <Space>
-                        <Button onClick={onClose}>Cancel</Button>
+                        <Button onClick={onClose}>Hủy</Button>
                         <Button onClick={handleSubmitForm} type="default">
-                            Create
+                            Tạo
                         </Button>
                     </Space>
                 }
@@ -85,11 +85,11 @@ const AddProductButton: React.FC = () => {
                         <Col span={20}>
                             <Form.Item
                                 name="name"
-                                label="Name"
+                                label="Tên sản phẩm"
                                 rules={[
                                     {
                                         required: true,
-                                        message: 'Please enter product name',
+                                        message: 'Vui lòng nhập tên sản phẩm',
                                     },
                                 ]}
                             >
@@ -109,11 +109,11 @@ const AddProductButton: React.FC = () => {
                         <Col span={20}>
                             <Form.Item
                                 name="img_url"
-                                label="Image Url"
+                                label="URL Hình ảnh"
                                 rules={[
                                     {
                                         required: true,
-                                        message: 'Please enter image URL',
+                                        message: 'Vui lòng nhập URL hình ảnh',
                                     },
                                 ]}
                             >
@@ -134,11 +134,11 @@ const AddProductButton: React.FC = () => {
                         <Col span={20}>
                             <Form.Item
                                 name="price"
-                                label="Price"
+                                label="Giá"
                                 rules={[
                                     {
                                         required: true,
-                                        message: 'Please enter price',
+                                        message: 'Vui lòng nhập giá',
                                     },
                                 ]}
                             >
@@ -158,11 +158,11 @@ const AddProductButton: React.FC = () => {
                         <Col span={20}>
                             <Form.Item
                                 name="category"
-                                label="Category"
+                                label="Danh mục"
                                 rules={[
                                     {
                                         required: true,
-                                        message: 'Please select an category',
+                                        message: 'Vui lòng chọn danh mục',
                                     },
                                 ]}
                             >

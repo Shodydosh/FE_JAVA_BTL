@@ -143,21 +143,20 @@ const DiscountManager: React.FC<{ discountsData: Discount[] }> = ({
             title: 'Hành động',
             key: 'action',
             render: (_, record) => (
-                <div className="space-x-2">
+                <div className="flex gap-2">
                     <Button
-                        type="primary"
-                        ghost
-                        icon={<EditOutlined />}
+                        type="default"
+                        icon={<EditOutlined className="text-blue-500" />}
                         onClick={() => handleEdit(record)}
-                        className="hover:scale-105 transition-transform"
+                        className="border-blue-500 text-blue-500 hover:text-blue-600 hover:border-blue-600"
                     >
                         Sửa
                     </Button>
                     <Button
-                        danger
-                        icon={<DeleteOutlined />}
+                        type="default"
+                        icon={<DeleteOutlined className="text-red-500" />}
                         onClick={() => handleDelete(record.id)}
-                        className="hover:scale-105 transition-transform"
+                        className="border-red-500 text-red-500 hover:text-red-600 hover:border-red-600"
                     >
                         Xóa
                     </Button>
@@ -167,14 +166,14 @@ const DiscountManager: React.FC<{ discountsData: Discount[] }> = ({
     ];
 
     return (
-        <div className="p-6 bg-white rounded-lg shadow-md">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-semibold text-gray-800">Quản lý mã giảm giá</h1>
+        <div className="p-8 bg-white rounded-xl shadow-sm">
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-2xl font-bold text-gray-800">Quản lý mã giảm giá</h1>
                 <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
+                    type="default"
+                    icon={<PlusOutlined className="text-blue-500" />}
                     onClick={handleAdd}
-                    className="hover:scale-105 transition-transform bg-[#1890ff]"
+                    className="flex items-center gap-2 border-blue-500 text-blue-500 hover:text-blue-600 hover:border-blue-600"
                     size="large"
                 >
                     Thêm mã giảm giá
@@ -185,104 +184,105 @@ const DiscountManager: React.FC<{ discountsData: Discount[] }> = ({
                 dataSource={discounts} // Use local state instead of props
                 rowKey="id"
                 columns={columns}
-                className="shadow-sm rounded-lg"
+                className="shadow-sm rounded-lg overflow-hidden"
                 pagination={{
                     pageSize: 10,
                     showSizeChanger: true,
                     showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} mục`,
+                    className: "p-4"
                 }}
             />
 
             <Modal
                 title={
-                    <span className="text-lg font-semibold">
+                    <span className="text-xl font-bold text-gray-800">
                         {editingDiscount ? 'Sửa mã giảm giá' : 'Thêm mã giảm giá'}
                     </span>
                 }
                 visible={visible}
                 onCancel={() => setVisible(false)}
                 footer={null}
-                className="rounded-lg"
-                width={600}
+                className="rounded-xl"
+                width={700}
             >
                 <Form
                     form={form}
                     onFinish={handleSubmit}
                     layout="vertical"
-                    className="space-y-4"
+                    className="space-y-6 pt-4"
                 >
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-6">
                         <Form.Item name="code" label="Mã" rules={[{ required: true }]}>
-                            <Input className="rounded-md" />
+                            <Input className="rounded-lg shadow-sm" />
                         </Form.Item>
                         <Form.Item name="name" label="Tên" rules={[{ required: true }]}>
-                            <Input className="rounded-md" />
+                            <Input className="rounded-lg shadow-sm" />
                         </Form.Item>
                     </div>
 
                     <Form.Item name="description" label="Mô tả">
-                        <Input.TextArea className="rounded-md" rows={4} />
+                        <Input.TextArea className="rounded-lg shadow-sm" rows={4} />
                     </Form.Item>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-6">
                         <Form.Item name="type" label="Loại" rules={[{ required: true }]}>
-                            <Select className="rounded-md">
+                            <Select className="rounded-lg shadow-sm">
                                 <Select.Option value="FIXED_AMOUNT">Giảm theo số tiền</Select.Option>
                                 <Select.Option value="PERCENTAGE">Giảm theo phần trăm</Select.Option>
                             </Select>
                         </Form.Item>
                         <Form.Item name="value" label="Giá trị" rules={[{ required: true }]}>
-                            <InputNumber min={0} className="w-full rounded-md" />
+                            <InputNumber min={0} className="w-full rounded-lg shadow-sm" />
                         </Form.Item>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-6">
                         <Form.Item name="maxDiscountAmount" label="Giảm tối đa">
-                            <InputNumber min={0} className="w-full rounded-md" />
+                            <InputNumber min={0} className="w-full rounded-lg shadow-sm" />
                         </Form.Item>
                         <Form.Item name="minOrderAmount" label="Đơn hàng tối thiểu">
-                            <InputNumber min={0} className="w-full rounded-md" />
+                            <InputNumber min={0} className="w-full rounded-lg shadow-sm" />
                         </Form.Item>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-6">
                         <Form.Item
                             name="startDate"
                             label="Ngày bắt đầu"
                             rules={[{ required: true }]}
                         >
-                            <DatePicker className="w-full rounded-md" />
+                            <DatePicker className="w-full rounded-lg shadow-sm" />
                         </Form.Item>
                         <Form.Item
                             name="endDate"
                             label="Ngày kết thúc"
                             rules={[{ required: true }]}
                         >
-                            <DatePicker className="w-full rounded-md" />
+                            <DatePicker className="w-full rounded-lg shadow-sm" />
                         </Form.Item>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-6">
                         <Form.Item name="maxUsage" label="Số lần sử dụng tối đa">
-                            <InputNumber min={0} className="w-full rounded-md" />
+                            <InputNumber min={0} className="w-full rounded-lg shadow-sm" />
                         </Form.Item>
                         <Form.Item name="isActive" label="Kích hoạt" valuePropName="checked">
                             <Switch />
                         </Form.Item>
                     </div>
 
-                    <Form.Item className="flex justify-end mb-0">
+                    <Form.Item className="flex justify-end mb-0 pt-4 border-t">
                         <Button
                             type="default"
                             onClick={() => setVisible(false)}
-                            className="mr-2"
+                            className="mr-4 border-gray-400 text-gray-600 hover:text-gray-800 hover:border-gray-600"
                         >
                             Hủy
                         </Button>
                         <Button
-                            type="primary"
+                            type="default"
                             htmlType="submit"
-                            className="hover:scale-105 transition-transform bg-[#1890ff]"
+                            className="border-blue-500 text-blue-500 hover:text-blue-600 hover:border-blue-600"
                         >
                             {editingDiscount ? 'Cập nhật' : 'Tạo'}
                         </Button>

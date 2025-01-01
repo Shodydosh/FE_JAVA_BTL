@@ -75,15 +75,15 @@ const UpdateProductDrawer: React.FC<ThisProps> = ({ productData }) => {
                 icon={<EditOutlined />}
             ></Button>
             <Drawer
-                title={`Add new product`}
+                title={`Cập nhật sản phẩm`}
                 width={600}
                 onClose={onClose}
                 open={open}
                 extra={
                     <Space>
-                        <Button onClick={onClose}>Cancel</Button>
+                        <Button onClick={onClose}>Hủy</Button>
                         <Button onClick={handleSubmitForm} type="default">
-                            Update
+                            Cập nhật
                         </Button>
                     </Space>
                 }
@@ -93,11 +93,11 @@ const UpdateProductDrawer: React.FC<ThisProps> = ({ productData }) => {
                         <Col span={20}>
                             <Form.Item
                                 name="name"
-                                label="Name"
+                                label="Tên sản phẩm"
                                 rules={[
                                     {
                                         required: true,
-                                        message: 'Please enter product name',
+                                        message: 'Vui lòng nhập tên sản phẩm',
                                     },
                                 ]}
                             >
@@ -118,11 +118,11 @@ const UpdateProductDrawer: React.FC<ThisProps> = ({ productData }) => {
                         <Col span={20}>
                             <Form.Item
                                 name="img_url"
-                                label="Image Url"
+                                label="Đường dẫn hình ảnh"
                                 rules={[
                                     {
                                         required: true,
-                                        message: 'Please enter image URL',
+                                        message: 'Vui lòng nhập đường dẫn hình ảnh',
                                     },
                                 ]}
                             >
@@ -144,11 +144,11 @@ const UpdateProductDrawer: React.FC<ThisProps> = ({ productData }) => {
                         <Col span={20}>
                             <Form.Item
                                 name="price"
-                                label="Price"
+                                label="Giá"
                                 rules={[
                                     {
                                         required: true,
-                                        message: 'Please enter price',
+                                        message: 'Vui lòng nhập giá sản phẩm',
                                     },
                                 ]}
                             >
@@ -169,11 +169,11 @@ const UpdateProductDrawer: React.FC<ThisProps> = ({ productData }) => {
                         <Col span={20}>
                             <Form.Item
                                 name="category"
-                                label="Category"
+                                label="Danh mục"
                                 rules={[
                                     {
                                         required: true,
-                                        message: 'Please select an category',
+                                        message: 'Vui lòng chọn danh mục',
                                     },
                                 ]}
                             >
@@ -187,11 +187,11 @@ const UpdateProductDrawer: React.FC<ThisProps> = ({ productData }) => {
                                         })
                                     }
                                 >
-                                    <Option value="laptop">Laptop</Option>
-                                    <Option value="phone">Phone</Option>
-                                    <Option value="tablet">Tablet</Option>
-                                    <Option value="book">Book</Option>
-                                    <Option value="clothing">Clothing</Option>
+                                    <Option value="laptop">Máy tính xách tay</Option>
+                                    <Option value="phone">Điện thoại</Option>
+                                    <Option value="tablet">Máy tính bảng</Option>
+                                    <Option value="book">Sách</Option>
+                                    <Option value="clothing">Quần áo</Option>
                                 </Select>
                             </Form.Item>
                         </Col>
