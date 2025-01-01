@@ -39,6 +39,16 @@ const ProductList = (props: any) => {
     return ['all', ...Array.from(cats)];
   }, [productData]);
 
+  // Add category mapping
+  const categoryLabels: { [key: string]: string } = {
+    'all': 'Tất cả danh mục',
+    'book': 'Sách & Tài liệu',
+    'clothing': 'Thời trang',
+    'laptop': 'Máy tính xách tay',
+    'mobile': 'Điện thoại di động',
+    'tablet': 'Máy tính bảng'
+  };
+
   // Update filteredProducts to include discount filtering
   const filteredProducts = useMemo(() => {
     if (!productData) return [];
@@ -124,7 +134,7 @@ const ProductList = (props: any) => {
                           >
                               {categories.map((cat) => (
                                   <Option key={cat} value={cat}>
-                                      {cat === 'all' ? 'Tất cả danh mục' : cat}
+                                      {categoryLabels[cat] || cat}
                                   </Option>
                               ))}
                           </Select>

@@ -12,7 +12,9 @@ const nextConfig = {
             'images-na.ssl-images-amazon.com',
             'upload.wikimedia.org',
             'i.harperapps.com',
-            'ananas.vn'
+            'ananas.vn',
+            'pos.nvncdn.com',
+            ''
         ],
     },
     async rewrites() {
