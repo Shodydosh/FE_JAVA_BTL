@@ -539,11 +539,7 @@ const AdminPage = () => {
                             </div>
                         ) : selectedMenuItem === 'shipment' ? (
                             <div>
-                                <div className="mb-8 mt-4 flex justify-between">
-                                    <h1 className="text-3xl font-bold text-black">
-                                        Quản lý vận chuyển
-                                    </h1>
-                                </div>
+                                
                                 {shipmentsError ? (
                                     <div className="text-red-500">
                                         Error loading shipments:{' '}
@@ -564,11 +560,7 @@ const AdminPage = () => {
                             </div>
                         ) : selectedMenuItem === 'discount' ? (
                             <div>
-                                <div className="mb-8 mt-4 flex justify-between">
-                                    <h1 className="text-3xl font-bold text-black">
-                                        Quản lý mã giảm giá
-                                    </h1>
-                                </div>
+                                
                                 <DiscountManager
                                     discountsData={discountsData}
                                 />

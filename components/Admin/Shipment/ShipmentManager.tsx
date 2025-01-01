@@ -79,6 +79,16 @@ const ShipmentManager: React.FC<ShipmentManagerProps> = ({
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [loadingOrderItems, setLoadingOrderItems] = useState(false);
 
+  const statusLabels: Record<ShipmentStatus, string> = {
+    [ShipmentStatus.PENDING]: 'Chờ xử lý',
+    [ShipmentStatus.CONFIRMED]: 'Đã xác nhận',
+    [ShipmentStatus.PROCESSING]: 'Đang xử lý',
+    [ShipmentStatus.SHIPPING]: 'Đang giao hàng',
+    [ShipmentStatus.DELIVERED]: 'Đã giao hàng',
+    [ShipmentStatus.CANCELLED]: 'Đã hủy',
+    [ShipmentStatus.RETURNED]: 'Đã hoàn trả'
+  };
+
   const showDeleteConfirm = (id: string) => {
     Modal.confirm({
       title: 'Xác nhận xóa',
@@ -192,12 +202,12 @@ const ShipmentManager: React.FC<ShipmentManagerProps> = ({
 
   const columns = [
     {
-      title: 'ID',
+      title: 'Mã đơn hàng',
       dataIndex: 'id',
       key: 'id',
       width: 180,
       render: (text: string) => (
-        <span className="font-medium text-gray-700">{text}</span>
+        <span className="font-semibold text-blue-600">{text}</span>
       ),
     },
     {
@@ -254,9 +264,11 @@ const ShipmentManager: React.FC<ShipmentManagerProps> = ({
           loading={updatingStatus === record.id}
           size="middle"
         >
-          {Object.values(ShipmentStatus).map((s) => (
-            <Select.Option key={s} value={s}>
-              {s}
+          {Object.entries(statusLabels).map(([value, label]) => (
+            <Select.Option key={value} value={value}>
+              <Tag color={getStatusColor(value as ShipmentStatus)}>
+                {label}
+              </Tag>
             </Select.Option>
           ))}
         </Select>
@@ -300,35 +312,49 @@ const ShipmentManager: React.FC<ShipmentManagerProps> = ({
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <Table 
-        columns={columns} 
-        dataSource={shipments} // Sử dụng state thay vì prop
-        rowKey="id"
-        pagination={{ 
-          pageSize: 10,
-          showSizeChanger: true,
-          showTotal: (total) => `Tổng số ${total} đơn hàng`,
-          className: "p-4"
-        }}
-        scroll={{ x: 1500 }}
-        className="border border-gray-200"
-        rowClassName="hover:bg-gray-50"
-      />
-      
+    <div className="space-y-4">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg shadow-sm">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          Quản lý vận chuyển
+        </h2>
+        
+        <div className="bg-white rounded-lg shadow-md">
+          <Table 
+            columns={columns} 
+            dataSource={shipments} // Sử dụng state thay vì prop
+            rowKey="id"
+            pagination={{ 
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: (total) => `Tổng số ${total} đơn vận chuyển`,
+              className: "p-4"
+            }}
+            scroll={{ x: 1500 }}
+            className="border border-gray-200"
+            rowClassName="hover:bg-gray-50"
+          />
+        </div>
+      </div>
+
       <Modal
-        title="Chi tiết đơn vận chuyển"
+        title={
+          <div className="text-lg font-bold text-gray-800 border-b pb-3">
+            Chi tiết đơn vận chuyển
+          </div>
+        }
         open={isDetailModalVisible}
         onCancel={() => setIsDetailModalVisible(false)}
         footer={null}
-        width={800}
+        width={900}
+        className="max-h-[90vh] overflow-auto"
       >
         {selectedShipment && (
-          <div className="space-y-6">
-            {/* Existing shipment info */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="font-medium">Thông tin vận đơn</h3>
+          <div className="space-y-6 p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-bold text-gray-700 mb-3">
+                  Thông tin vận đơn
+                </h3>
                 <p>Mã vận đơn: {selectedShipment.trackingNumber}</p>
                 <p>Trạng thái: 
                   <Tag color={getStatusColor(selectedShipment.status)} className="ml-2">
@@ -338,17 +364,21 @@ const ShipmentManager: React.FC<ShipmentManagerProps> = ({
                 <p>Phí vận chuyển: {selectedShipment.shippingFee.toLocaleString('vi-VN')}đ</p>
               </div>
               
-              <div>
-                <h3 className="font-medium">Thông tin người nhận</h3>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-bold text-gray-700 mb-3">
+                  Thông tin người nhận
+                </h3>
                 <p>Tên: {selectedShipment.recipientName}</p>
                 <p>Số điện thoại: {selectedShipment.recipientPhone}</p>
                 <p>Địa chỉ: {selectedShipment.shippingAddress}</p>
               </div>
             </div>
 
-            {/* New Order Items Section */}
-            <div className="border-t pt-4">
-              <h3 className="font-medium mb-3">Danh sách sản phẩm</h3>
+            {/* Products section */}
+            <div className="bg-white rounded-lg shadow-sm">
+              <h3 className="font-bold text-gray-700 p-4 border-b">
+                Danh sách sản phẩm
+              </h3>
               <div className="overflow-x-auto">
                 {loadingOrderItems ? (
                   <div className="text-center py-4">
@@ -410,16 +440,20 @@ const ShipmentManager: React.FC<ShipmentManagerProps> = ({
               </div>
             </div>
 
-            {/* Existing notes and time sections */}
-            <div>
-              <h3 className="font-medium">Ghi chú</h3>
-              <p>{selectedShipment.notes || 'Không có ghi chú'}</p>
-            </div>
-
-            <div>
-              <h3 className="font-medium">Thời gian</h3>
-              <p>Ngày tạo: {dayjs(selectedShipment.createdAt).format('DD/MM/YYYY HH:mm')}</p>
-              <p>Cập nhật lần cuối: {selectedShipment.updatedAt ? dayjs(selectedShipment.updatedAt).format('DD/MM/YYYY HH:mm') : '-'}</p>
+            {/* Notes and timestamps */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-bold text-gray-700 mb-3">Ghi chú</h3>
+                <p className="text-gray-600">
+                  {selectedShipment.notes || 'Không có ghi chú'}
+                </p>
+              </div>
+              
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-bold text-gray-700 mb-3">Thời gian</h3>
+                <p>Ngày tạo: {dayjs(selectedShipment.createdAt).format('DD/MM/YYYY HH:mm')}</p>
+                <p>Cập nhật lần cuối: {selectedShipment.updatedAt ? dayjs(selectedShipment.updatedAt).format('DD/MM/YYYY HH:mm') : '-'}</p>
+              </div>
             </div>
           </div>
         )}
